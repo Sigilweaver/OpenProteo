@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/openproteo-io",
+    "crates/openproteo-io-cli",
+]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.75"
+authors = ["Nathan Riley <git@nathanriley.com>"]
+license = "Apache-2.0"
+repository = "https://github.com/Sigilweaver/OpenProteo"
+
+[workspace.dependencies]
+openproteo-core = { path = "../OpenProteoCore" }
+opentfraw = { path = "../OpenTFRaw/crates/opentfraw" }
+opentimstdf = { path = "../OpenTDF/crates/opentimstdf" }
+openwraw = { path = "../OpenWRaw/crates/openwraw" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"

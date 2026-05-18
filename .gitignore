@@ -1,0 +1,7 @@
+target/
+Cargo.lock
+.DS_Store
+*.swp
+
+# Working-name reminder, kept out of history
+RENAME-TBD.md

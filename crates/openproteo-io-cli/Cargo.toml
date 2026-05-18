@@ -1,0 +1,19 @@
+[package]
+name = "openproteo-io-cli"
+version = "0.1.0"
+description = "vendor2mzml: convert Thermo / Bruker / Waters raw acquisitions to mzML."
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "vendor2mzml"
+path = "src/main.rs"
+
+[dependencies]
+openproteo-io = { path = "../openproteo-io", features = ["all"] }
+
+[lints]
+workspace = true
