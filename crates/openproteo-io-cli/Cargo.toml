@@ -13,7 +13,10 @@ name = "vendor2mzml"
 path = "src/main.rs"
 
 [dependencies]
+openproteo-core = { workspace = true }
 openproteo-io = { path = "../openproteo-io", features = ["all"] }
+clap = { version = "4.5", features = ["derive"] }
+flate2 = "1.0"
 
 [lints]
 workspace = true

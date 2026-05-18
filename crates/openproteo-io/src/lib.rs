@@ -139,6 +139,18 @@ pub fn convert_to_mzml(
     write_to(detected.format, &detected.path, &mut w, indexed)
 }
 
+/// Like [`convert_to_mzml`] but writes to an arbitrary writer instead
+/// of a path. Useful for streaming output to gzip, stdout, or any other
+/// sink.
+#[allow(clippy::needless_pass_by_value)]
+pub fn convert_to_mzml_writer<W: std::io::Write>(
+    detected: Detected,
+    writer: &mut W,
+    indexed: bool,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    write_to(detected.format, &detected.path, writer, indexed)
+}
+
 fn write_to(
     format: VendorFormat,
     path: &Path,
@@ -212,6 +224,100 @@ fn thermo_convert(
         opentfraw::mzml::write_mzml(&raw, &mut source, out, filename, false)?;
     }
     Ok(())
+}
+
+/// Open the appropriate vendor source for `detected`, collect every
+/// spectrum into a `Vec`, and return both the records and the
+/// run-level metadata. Used by tools that need a second pass over the
+/// data (conformance validation, `info` summaries, Arrow batching).
+///
+/// This dispatches to the same vendor code paths as
+/// [`convert_to_mzml`], so a feature-gated build that excludes a
+/// vendor will return an error here for that vendor.
+#[allow(clippy::needless_pass_by_value)]
+pub fn collect(
+    detected: Detected,
+) -> Result<(Vec<openproteo_core::SpectrumRecord>, openproteo_core::RunMetadata), Box<dyn std::error::Error + Send + Sync>>
+{
+    use openproteo_core::SpectrumSource;
+    match detected.format {
+        VendorFormat::ThermoRaw => {
+            #[cfg(feature = "thermo")]
+            {
+                use std::fs::File;
+                use std::io::BufReader;
+                let raw = opentfraw::RawFileReader::open_path(&detected.path)?;
+                let mut source =
+                    BufReader::with_capacity(2 << 20, File::open(&detected.path)?);
+                let filename = detected
+                    .path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("unknown.raw");
+                let mut src =
+                    opentfraw::mzml::OpenTfRawSource::new(&raw, &mut source, filename, false);
+                let meta = src.run_metadata();
+                let recs: Vec<_> = src.iter_spectra().collect();
+                Ok((recs, meta))
+            }
+            #[cfg(not(feature = "thermo"))]
+            Err("openproteo-io was built without the 'thermo' feature".into())
+        }
+        VendorFormat::BrukerTdf => {
+            #[cfg(feature = "bruker")]
+            {
+                let mut src = opentimstdf::mzml::TdfSource::open(&detected.path)?;
+                let meta = src.run_metadata();
+                let recs: Vec<_> = src.iter_spectra().collect();
+                Ok((recs, meta))
+            }
+            #[cfg(not(feature = "bruker"))]
+            Err("openproteo-io was built without the 'bruker' feature".into())
+        }
+        VendorFormat::WatersRaw => {
+            #[cfg(feature = "waters")]
+            {
+                let mut src = openwraw::mzml::WatersSource::open(&detected.path)?;
+                let meta = src.run_metadata();
+                let recs: Vec<_> = src.iter_spectra().collect();
+                Ok((recs, meta))
+            }
+            #[cfg(not(feature = "waters"))]
+            Err("openproteo-io was built without the 'waters' feature".into())
+        }
+    }
+}
+
+/// A trivial in-memory [`openproteo_core::SpectrumSource`] backed by a
+/// `Vec<SpectrumRecord>` + a [`openproteo_core::RunMetadata`]. Hand it
+/// to `openproteo_core::write_mzml` when you already have the records
+/// in hand and just want to emit mzML.
+pub struct VecSource {
+    pub metadata: openproteo_core::RunMetadata,
+    pub records: Vec<openproteo_core::SpectrumRecord>,
+}
+
+impl VecSource {
+    pub fn new(
+        metadata: openproteo_core::RunMetadata,
+        records: Vec<openproteo_core::SpectrumRecord>,
+    ) -> Self {
+        Self { metadata, records }
+    }
+}
+
+impl openproteo_core::SpectrumSource for VecSource {
+    fn run_metadata(&self) -> openproteo_core::RunMetadata {
+        self.metadata.clone()
+    }
+    fn iter_spectra<'s>(
+        &'s mut self,
+    ) -> Box<dyn Iterator<Item = openproteo_core::SpectrumRecord> + 's> {
+        Box::new(self.records.drain(..))
+    }
+    fn spectrum_count_hint(&self) -> Option<usize> {
+        Some(self.records.len())
+    }
 }
 
 #[cfg(test)]
