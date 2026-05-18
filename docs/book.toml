@@ -8,8 +8,8 @@ src = "src"
 [output.html]
 default-theme = "rust"
 preferred-dark-theme = "ayu"
-git-repository-url = "https://github.com/nathanriley/OpenProteo"
-edit-url-template = "https://github.com/nathanriley/OpenProteo/edit/main/docs/{path}"
+git-repository-url = "https://github.com/Sigilweaver/OpenProteo"
+edit-url-template = "https://github.com/Sigilweaver/OpenProteo/edit/main/docs/{path}"
 mathjax-support = false
 
 [output.html.fold]

@@ -45,5 +45,5 @@ for:
 - `macos-aarch64`
 - `windows-x86_64`
 
-Download the archive for your platform from the [Releases](https://github.com/nathanriley/OpenProteo/releases)
+Download the archive for your platform from the [Releases](https://github.com/Sigilweaver/OpenProteo/releases)
 page, extract, and put `vendor2mzml` on your `PATH`.

@@ -1,6 +1,6 @@
 # Thermo Finnigan RAW
 
-Thermo `.raw` support is provided by [`opentfraw`](https://github.com/nathanriley/OpenTFRaw),
+Thermo `.raw` support is provided by [`opentfraw`](https://github.com/Sigilweaver/OpenTFRaw),
 a pure-Rust reader that parses the Finnigan trailer-and-index layout
 directly. **No Thermo `.NET` runtime, no `RawFileReader.dll`.**
 

@@ -1,6 +1,6 @@
 # Waters MassLynx
 
-Waters `.raw/` bundles are read by [`openwraw`](https://github.com/nathanriley/OpenWRaw),
+Waters `.raw/` bundles are read by [`openwraw`](https://github.com/Sigilweaver/OpenWRaw),
 a pure-Rust reader for the MassLynx on-disk layout (no MassLynx
 runtime, no `DACServer.exe`).
 

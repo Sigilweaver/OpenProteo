@@ -1,6 +1,6 @@
 # Bruker timsTOF TDF
 
-Bruker `.d/` bundles are read by [`opentimstdf`](https://github.com/nathanriley/OpenTDF),
+Bruker `.d/` bundles are read by [`opentimstdf`](https://github.com/Sigilweaver/OpenTimsTDF),
 which parses the SQLite metadata in `analysis.tdf` and the binary
 frame data in `analysis.tdf_bin` without calling Bruker's `libtimsdata`.
 
