@@ -1,3 +1,8 @@
+---
+slug: /
+title: Introduction
+---
+
 # OpenProteo
 
 OpenProteo is a pure-Rust mass-spectrometry I/O stack. It reads native

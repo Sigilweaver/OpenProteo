@@ -152,3 +152,18 @@ jobs:
         run: maturin develop --release --features pyo3/extension-module
       - name: Import smoke test
         run: python -c "import openproteo_io; print(openproteo_io.__version__ if hasattr(openproteo_io, '__version__') else 'ok')"
+
+  docs:
+    name: Docs (Docusaurus)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install
+        working-directory: docs-site
+        run: bun install --frozen-lockfile
+      - name: Build
+        working-directory: docs-site
+        run: bun run build

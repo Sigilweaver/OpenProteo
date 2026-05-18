@@ -11,7 +11,10 @@ __pycache__/
 *.dylib
 
 # mdBook output
-docs/book/
+# (mdBook removed; Docusaurus site lives in docs-site/)
+docs-site/build/
+docs-site/node_modules/
+docs-site/.docusaurus/
 
 # Working-name reminder, kept out of history
 RENAME-TBD.md
