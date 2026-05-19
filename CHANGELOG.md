@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Coordinated stack release scheme. `scripts/release-stack.sh` reads
+  pinned versions across the five-repo stack, aggregates per-repo
+  `CHANGELOG.md` entries into combined release notes, and can create +
+  push an annotated SemVer tag on the umbrella (dry-run by default;
+  `--apply` gates all mutations).
+- `STACK.md` pin-table snapshot of the current stack versions.
+- `docs/RELEASE.md` documenting the umbrella SemVer tag scheme,
+  per-repo bump rules, and the release procedure.
 - `openproteo-io` 0.1.0 lib crate: vendor-feature gates (`thermo`,
   `bruker`, `waters`, `all`), `detect_format()` runtime probe, and
   `convert_to_mzml()` one-shot conversion that defers to the matching

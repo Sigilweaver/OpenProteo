@@ -180,11 +180,16 @@ work package.
    hub; consider deprecating their standalone Docusaurus sites once the hub ships.
    Estimated: medium.
 
-4. **Coordinated stack release.** Define a `stack-vYYYY.MM` tag scheme owned by
-   OpenProteo. Add a `scripts/release-stack.sh` that validates versions, builds, tags,
-   and writes combined release notes. First stack release pins the current versions
-   (Core 0.1, vendor crates 1.0.x, Umbrella 0.1, ProLance once it lands). Estimated:
-   small.
+4. **Coordinated stack release.** [DONE] The umbrella uses SemVer tags
+   (`vX.Y.Z`) on the OpenProteo repo. `scripts/release-stack.sh` reads pinned
+   versions across the five-repo stack (OpenProteo, OpenProteoCore, OpenTFRaw,
+   OpenTimsTDF, OpenWRaw), aggregates per-repo `CHANGELOG.md` entries into
+   combined release notes, and can optionally create + push an annotated
+   umbrella tag (dry-run by default; `--apply` gates all mutations). The pin
+   table is mirrored in `STACK.md`. Procedure documented in
+   [`docs/RELEASE.md`](docs/RELEASE.md). Initial stack baseline pinned at
+   Core 0.1.0, opentfraw 1.0.4, opentimstdf 1.0.4, openwraw 1.0.3, umbrella
+   0.1.0.
 
 5. **Unified Python distribution.** [DONE - variant (a)] `pip install openproteo`
    ships the metapackage at `python/openproteo` (v0.2.0). Base install
