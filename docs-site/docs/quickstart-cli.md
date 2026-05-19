@@ -20,20 +20,34 @@ vendor2mzml convert sample.raw sample.mzML.gz
 hash, so downstream tools (mzML2HDF, ProteoWizard's `msconvert`,
 `MzIdentML` builders) can index-jump into the file.
 
-## Validate before writing
+## Validate
 
 ```sh
-vendor2mzml convert sample.raw sample.mzML --validate
+vendor2mzml validate sample.raw
+vendor2mzml validate sample.mzML
+vendor2mzml validate --json sample.d
 ```
 
-This collects every spectrum and runs the conformance harness from
-`openproteo-core` (monotonic indices, non-negative retention times,
-sane peak counts, peak arrays in agreement, polarity / MS-level
-consistency). On any violation, no mzML is written and the process
-exits with status 3.
+`validate` accepts any input `convert` accepts (Thermo `.raw`, Bruker
+`.d`, Waters `.raw`) plus pre-existing mzML files (`.mzML`, `.mzML.gz`,
+read via `mzdata`). It runs the conformance harness from
+`openproteo-core`:
 
-The collected records are reused for the actual write, so `--validate`
-costs one decode pass, not two.
+- monotonic spectrum indices,
+- non-negative, non-decreasing retention times,
+- equal-length m/z and intensity arrays,
+- equal-length mobility arrays (if present),
+- MS-level / polarity sanity,
+- precursor presence on MSn spectra.
+
+`--json` emits a single JSON object suitable for `jq`:
+
+```json
+{"ok":true,"input":"sample.mzML","kind":"mzML","spectrum_count":3047,"elapsed_sec":0.214}
+```
+
+On failure, `ok` is `false` and `error_kind` names the conformance
+variant (for example, `PeakArrayLengthMismatch`).
 
 ## Profile a run
 
@@ -44,7 +58,7 @@ vendor2mzml convert sample.raw sample.mzML --profile json
 emits one JSON object on stderr after the conversion completes:
 
 ```json
-{"output":"sample.mzML","indexed":false,"validated":false,"spectra":3047,"elapsed_sec":0.812}
+{"output":"sample.mzML","indexed":false,"spectra":3047,"elapsed_sec":0.812}
 ```
 
 Use `--profile text` for a human-readable variant.
@@ -75,9 +89,9 @@ piping into `jq`.
 
 ## Exit codes
 
-| Code | Meaning                                                       |
-| ---- | ------------------------------------------------------------- |
-| 0    | Success.                                                      |
-| 1    | I/O error, unsupported format, or vendor crate failure.       |
-| 2    | Argument parsing error (clap).                                |
-| 3    | `--validate` was passed and the conformance harness rejected. |
+| Code | Meaning                                                          |
+| ---- | ---------------------------------------------------------------- |
+| 0    | Success.                                                         |
+| 1    | I/O error, or `convert` failed (unsupported format / vendor).    |
+| 2    | `validate`: input format was not recognised (clap errors also).  |
+| 3    | `validate`: the conformance harness rejected the input.          |

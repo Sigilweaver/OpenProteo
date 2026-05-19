@@ -1,5 +1,8 @@
 //! `vendor2mzml`: convert Thermo / Bruker / Waters acquisitions to mzML,
-//! or print a one-pass summary of one.
+//! print a one-pass summary of one, or validate a vendor or mzML input
+//! against the openproteo-core conformance harness.
+
+mod mzml_reader;
 
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -13,7 +16,7 @@ use flate2::write::GzEncoder;
 use flate2::Compression;
 use openproteo_core::conformance::assert_iter_invariants;
 use openproteo_core::SpectrumRecord;
-use openproteo_io::{collect, convert_to_mzml_writer, detect_format, Detected, VecSource};
+use openproteo_io::{collect, convert_to_mzml_writer, detect_format, Detected};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -33,6 +36,10 @@ enum Cmd {
     Convert(ConvertArgs),
     /// Print a one-pass summary of a vendor acquisition without writing mzML.
     Info(InfoArgs),
+    /// Run the openproteo-core conformance harness against a vendor
+    /// acquisition or an mzML file. Exits 0 on pass, 2 on unsupported
+    /// input, 3 on conformance failure.
+    Validate(ValidateArgs),
 }
 
 #[derive(Args, Debug)]
@@ -46,13 +53,19 @@ struct ConvertArgs {
     /// Emit indexed mzML (writes an `<indexList>` and SHA-1 hash).
     #[arg(long)]
     indexed: bool,
-    /// Run the conformance harness over the source before writing. On
-    /// failure no mzML is produced and the process exits with status 3.
-    #[arg(long)]
-    validate: bool,
     /// Emit timing and record counts on stderr in the chosen format.
     #[arg(long, value_enum)]
     profile: Option<ProfileFormat>,
+}
+
+#[derive(Args, Debug)]
+struct ValidateArgs {
+    /// Input path: a vendor acquisition (`.raw` / `.d/` / `.raw/`) or
+    /// an mzML file (`.mzml` or `.mzml.gz`).
+    input: PathBuf,
+    /// Emit the result as a single JSON object on stdout.
+    #[arg(long)]
+    json: bool,
 }
 
 #[derive(Args, Debug)]
@@ -86,6 +99,7 @@ fn main() -> ExitCode {
     match Cli::parse().cmd {
         Cmd::Convert(args) => run_convert(args),
         Cmd::Info(args) => run_info(args),
+        Cmd::Validate(args) => run_validate(args),
     }
 }
 
@@ -109,58 +123,6 @@ fn run_convert(args: ConvertArgs) -> ExitCode {
     );
 
     let t_start = Instant::now();
-
-    if args.validate {
-        let t_v = Instant::now();
-        let (records, metadata) = match collect(detected.clone()) {
-            Ok(p) => p,
-            Err(e) => {
-                eprintln!("error: collect: {e}");
-                return ExitCode::from(1);
-            }
-        };
-        if let Err(e) = assert_iter_invariants(records.iter().cloned()) {
-            eprintln!("conformance failure: {e}");
-            return ExitCode::from(3);
-        }
-        let spectrum_count = records.len();
-        eprintln!(
-            "validated {} spectra in {:.2}s",
-            spectrum_count,
-            t_v.elapsed().as_secs_f64()
-        );
-
-        let mut writer = match open_writer(&args.output) {
-            Ok(w) => w,
-            Err(e) => {
-                eprintln!("error: open output: {e}");
-                return ExitCode::from(1);
-            }
-        };
-        let mut src = VecSource::new(metadata, records);
-        let write_res = if args.indexed {
-            openproteo_core::write_indexed_mzml(&mut src, &mut writer)
-        } else {
-            openproteo_core::write_mzml(&mut src, &mut writer)
-        };
-        if let Err(e) = write_res {
-            eprintln!("error: write mzML: {e}");
-            return ExitCode::from(1);
-        }
-        if let Err(e) = writer.flush() {
-            eprintln!("error: flush: {e}");
-            return ExitCode::from(1);
-        }
-        report(
-            args.profile,
-            &args.output,
-            args.indexed,
-            spectrum_count,
-            true,
-            t_start.elapsed().as_secs_f64(),
-        );
-        return ExitCode::SUCCESS;
-    }
 
     let mut writer = match open_writer(&args.output) {
         Ok(w) => w,
@@ -401,3 +363,128 @@ fn summarize(
     }
 }
 
+// ---------------------------------------------------------------------
+// validate
+// ---------------------------------------------------------------------
+
+fn run_validate(args: ValidateArgs) -> ExitCode {
+    let t_start = Instant::now();
+
+    // 1) Vendor input wins if detect_format recognizes it.
+    let records_res: Result<(Vec<SpectrumRecord>, &'static str), String> =
+        if let Some(detected) = detect_format(&args.input) {
+            let vendor = detected.format.name();
+            match collect(detected) {
+                Ok((records, _meta)) => Ok((records, vendor)),
+                Err(e) => Err(format!("collect: {e}")),
+            }
+        } else if mzml_reader::looks_like_mzml(&args.input) {
+            match mzml_reader::read_mzml_records(&args.input) {
+                Ok(records) => Ok((records, "mzML")),
+                Err(e) => Err(format!("read mzML: {e}")),
+            }
+        } else {
+            emit_validate_result(args.json, &args.input, "unknown", 0, Err("input is not a recognized vendor format or mzML file"), 0.0);
+            return ExitCode::from(2);
+        };
+    let (records, kind) = match records_res {
+        Ok(p) => p,
+        Err(e) => {
+            emit_validate_result(args.json, &args.input, "error", 0, Err(&e), t_start.elapsed().as_secs_f64());
+            return ExitCode::from(1);
+        }
+    };
+
+    let count = records.len();
+    let result = assert_iter_invariants(records);
+    let elapsed = t_start.elapsed().as_secs_f64();
+    match result {
+        Ok(n) => {
+            emit_validate_result(args.json, &args.input, kind, n, Ok(()), elapsed);
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            let msg = format!("{}", e);
+            let variant = conformance_variant(&e);
+            emit_validate_result_with_variant(
+                args.json,
+                &args.input,
+                kind,
+                count,
+                Err(&msg),
+                Some(variant),
+                elapsed,
+            );
+            ExitCode::from(3)
+        }
+    }
+}
+
+fn conformance_variant(e: &openproteo_core::conformance::ConformanceError) -> &'static str {
+    use openproteo_core::conformance::ConformanceError as C;
+    match e {
+        C::PeakArrayLengthMismatch { .. } => "PeakArrayLengthMismatch",
+        C::MobilityArrayLengthMismatch { .. } => "MobilityArrayLengthMismatch",
+        C::TicMismatch { .. } => "TicMismatch",
+        C::BasePeakIntensityMismatch { .. } => "BasePeakIntensityMismatch",
+        C::MissingPrecursor { .. } => "MissingPrecursor",
+        C::RetentionTimeNonMonotonic { .. } => "RetentionTimeNonMonotonic",
+        C::IndexSequence { .. } => "IndexSequence",
+        C::EmptySpectrum { .. } => "EmptySpectrum",
+    }
+}
+
+fn emit_validate_result(
+    json: bool,
+    input: &Path,
+    kind: &str,
+    spectrum_count: usize,
+    result: Result<(), &str>,
+    elapsed_sec: f64,
+) {
+    emit_validate_result_with_variant(json, input, kind, spectrum_count, result, None, elapsed_sec);
+}
+
+fn emit_validate_result_with_variant(
+    json: bool,
+    input: &Path,
+    kind: &str,
+    spectrum_count: usize,
+    result: Result<(), &str>,
+    variant: Option<&'static str>,
+    elapsed_sec: f64,
+) {
+    let ok = result.is_ok();
+    let err = result.err().unwrap_or("");
+    if json {
+        let path_str = input.display().to_string();
+        let variant_field = match variant {
+            Some(v) => format!(",\"error_kind\":\"{v}\""),
+            None => String::new(),
+        };
+        let err_field = if ok {
+            String::new()
+        } else {
+            format!(",\"error\":{:?}{}", err, variant_field)
+        };
+        println!(
+            "{{\"ok\":{},\"input\":{:?},\"kind\":\"{}\",\"spectrum_count\":{},\"elapsed_sec\":{:.3}{}}}",
+            ok, path_str, kind, spectrum_count, elapsed_sec, err_field
+        );
+    } else if ok {
+        eprintln!(
+            "ok: {} ({} spectra, {:.2}s, {})",
+            input.display(),
+            spectrum_count,
+            elapsed_sec,
+            kind
+        );
+    } else {
+        eprintln!(
+            "FAIL: {} ({}): {}",
+            input.display(),
+            kind,
+            err
+        );
+    }
+}

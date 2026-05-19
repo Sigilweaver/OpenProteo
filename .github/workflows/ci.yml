@@ -78,6 +78,29 @@ jobs:
         working-directory: OpenProteo
         run: cargo test --workspace --all-features
 
+      - name: vendor2mzml validate against shared corpus (best-effort)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: OpenProteo
+        env:
+          OPENPROTEO_THERMO_RAW: ${{ secrets.OPENPROTEO_THERMO_RAW }}
+          OPENPROTEO_BRUKER_D: ${{ secrets.OPENPROTEO_BRUKER_D }}
+          OPENPROTEO_WATERS_RAW: ${{ secrets.OPENPROTEO_WATERS_RAW }}
+        run: |
+          set -e
+          for VAR in OPENPROTEO_THERMO_RAW OPENPROTEO_BRUKER_D OPENPROTEO_WATERS_RAW; do
+            VAL="${!VAR}"
+            if [ -z "$VAL" ]; then
+              echo "skip $VAR (unset)"
+              continue
+            fi
+            if [ ! -e "$VAL" ]; then
+              echo "skip $VAR=$VAL (not present in runner)"
+              continue
+            fi
+            echo "validate $VAR -> $VAL"
+            cargo run -p openproteo-io-cli --release --quiet -- validate --json "$VAL"
+          done
+
   msrv:
     name: MSRV check (1.75)
     runs-on: ubuntu-latest

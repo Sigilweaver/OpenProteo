@@ -196,10 +196,11 @@ work package.
    vendor crates. Optionally publish an `openproteo-error` aggregate enum used by the
    umbrella and ProLance so downstream `?`-propagation is uniform. Estimated: small.
 
-7. **Conformance suite as a binary.** Extract `openproteo_core::conformance` into a
-   standalone tool (`openproteo-validate` or a `vendor2mzml validate` subcommand on
-   anything that has a `SpectrumSource`). Run it as a CI step on every stack release
-   against a small public corpus. Estimated: small.
+7. **Conformance suite as a binary.** [DONE] `vendor2mzml validate <input>`
+   accepts any vendor input plus `.mzML` / `.mzML.gz` (via `mzdata`) and runs
+   `openproteo_core::conformance::assert_iter_invariants`. Exit codes:
+   `0` pass, `2` unrecognised input, `3` conformance failure. JSON output via
+   `--json`. CI runs it best-effort against the shared corpus secrets.
 
 8. **Cross-vendor benchmark suite.** Criterion benches for parse-throughput and
    mzML-write latency, one set per vendor crate, results published to the docs site.
