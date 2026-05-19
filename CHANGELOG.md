@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- README now leads with a stack callout naming the umbrella, the
+  three vendor readers (`opentfraw`, `opentimstdf`, `openwraw`),
+  shared core `openproteo-core`, and downstream consumer ProLance.
 - ProLance truth-test gate. New `scripts/truthtest-prolance.sh` runs
   `cargo build --workspace` and `cargo test --features vendors` (and
   optionally `--with-corpus` for the full mzML -> Lance roundtrip) in
@@ -53,3 +56,9 @@ All notable changes to this project will be documented in this file.
   delegates to `openproteo-core`).
 - STRATEGY P3 #11 (ProLance integration tests as the stack truth test)
   marked DONE via the new `--gate-prolance` flag.
+- STRATEGY P1 #3 rewritten and marked DONE: docs unification is
+  rejected in favor of cross-linking. Each repo keeps independent
+  docs to preserve legal isolation across the reverse-engineered
+  parsers and to keep parser-specific docs unmuddied by umbrella
+  scope. Stack callouts now live in all five stack repos plus the
+  downstream ProLance consumer.

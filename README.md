@@ -3,6 +3,17 @@
 > Working name. See [RENAME-TBD.md](RENAME-TBD.md) for the final-name
 > discussion.
 
+> Umbrella of the OpenProteo stack for proteomics raw-file access.
+> Vendor readers
+> [OpenTFRaw](https://github.com/Sigilweaver/OpenTFRaw) (Thermo),
+> [OpenTimsTDF](https://github.com/Sigilweaver/OpenTDF) (Bruker), and
+> [OpenWRaw](https://github.com/Sigilweaver/OpenWRaw) (Waters) sit on
+> top of shared core
+> [openproteo-core](https://github.com/Sigilweaver/OpenProteoCore).
+> Columnar storage and analysis lives in
+> [ProLance](https://github.com/Sigilweaver/ProLance), a downstream
+> consumer.
+
 `openproteo-io` is the umbrella crate that ties together the open Rust
 mass-spec parsers:
 

@@ -177,12 +177,17 @@ work package.
 
 ### P1 - Strategic alignment
 
-3. **Unify documentation under Docusaurus.** Convert OpenProteo's mdBook to a
-   Docusaurus site (matching the OpenWRaw/OpenTFRaw/OpenTimsTDF setup with bun +
-   `docusaurus.config.ts`). Absorb the existing per-repo docs as subsections (Vendors
-   > Waters / Thermo / Bruker). Per-vendor repos keep a thin README pointing to the
-   hub; consider deprecating their standalone Docusaurus sites once the hub ships.
-   Estimated: medium.
+3. **Cross-link the stack, keep docs independent.** [DONE] Each repo
+   keeps its own docs site (or none, for OpenProteoCore). Reasons:
+   (a) single-vendor consumers should be able to use one parser
+   without the umbrella in scope; (b) legal isolation - a hypothetical
+   C&D on one reverse-engineered parser should not affect the others;
+   (c) parser-internals docs (reverse-engineering notes, format
+   specs) stay co-located with the parser they describe.
+   Cross-link: every README (and Docusaurus `intro.md` where one
+   exists) carries a stack callout naming the umbrella, sibling
+   readers, and the shared core. Status: all five stack repos and
+   the downstream ProLance consumer now carry the callout.
 
 4. **Coordinated stack release.** [DONE] The umbrella uses SemVer tags
    (`vX.Y.Z`) on the OpenProteo repo. `scripts/release-stack.sh` reads pinned
