@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Shared corpus schema and fetcher (STRATEGY P3 #9). New
+  `docs/CORPUS.md` documents the per-repo `sources.json` /
+  `manifest.json` shape. New `scripts/fetch_corpus.py` is a
+  vendor-agnostic port of OpenTFRaw's fetcher, parameterized by
+  `--sources`, `--corpus-dir`, `--manifest`, and `--ext-pattern`.
+  OpenTFRaw now wraps it via a small shim; OpenTDF and OpenWRaw
+  carry stub `sources.json` files awaiting directory-bundle fetch
+  support.
 - README now leads with a stack callout naming the umbrella, the
   three vendor readers (`opentfraw`, `opentimstdf`, `openwraw`),
   shared core `openproteo-core`, and downstream consumer ProLance.
@@ -62,3 +70,6 @@ All notable changes to this project will be documented in this file.
   parsers and to keep parser-specific docs unmuddied by umbrella
   scope. Stack callouts now live in all five stack repos plus the
   downstream ProLance consumer.
+- STRATEGY P3 #9 (shared corpus + manifest) marked DONE: schema and
+  fetcher shipped; actual corpus files remain per-repo and
+  out-of-tree.

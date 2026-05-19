@@ -233,10 +233,18 @@ work package.
 
 ### P3 - Investment / future
 
-9. **Shared corpus + manifest.** YAML manifest (vendor, format version, acquisition
-   mode, file sizes, expected spectrum counts, fetch URL) used by all five repos.
-   Single `fetch-corpus` script. ProLance becomes the natural home for a reference
-   Lance store derived from the corpus. Estimated: medium.
+9. **Shared corpus + manifest.** [DONE] Shared schema documented in
+   `docs/CORPUS.md` (vendor-tagged `sources.json` with `accession`,
+   `instrument`, optional `format_version` / `acquisition_mode` /
+   `expected_spectrum_count`; manifest keyed by
+   `{accession}/{original_filename}`). Vendor-agnostic fetcher lives
+   at `scripts/fetch_corpus.py` (pure stdlib, PRIDE REST + FTP
+   fallback, regex-driven extension filter). OpenTFRaw migrated to a
+   thin shim that resolves the shared script via
+   `$OPENPROTEO_FETCHER` / `$OPENPROTEO_DIR` / sibling checkout.
+   OpenTDF and OpenWRaw carry stub `sources.json` files pending the
+   directory-bundle fetch mode. Actual corpus data stays per-repo and
+   out-of-tree (legal isolation).
 
 10. **Async / object-store readers.** S3 / GCS-backed `SpectrumSource` so the same
     parsers work on cloud-resident vendor files without a download step. Phase 4 on
