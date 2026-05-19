@@ -164,9 +164,12 @@ work package.
    This unblocks Waters ingest immediately (vendor2mzml already handles it) and
    removes the schema-drift surface. Estimated: medium.
 
-2. **OpenProteoCore visibility.** Write a real README + CHANGELOG. Promote the
-   ROADMAP out of `.gitignore`. Publish the trait + record reference as the first
-   section of the unified docs site. Estimated: small.
+2. **OpenProteoCore visibility.** [DONE] Expanded `README.md` to 150+
+   lines (install, quick example, API reference table, conformance,
+   Arrow, ecosystem). Added `CHANGELOG.md` (Keep-a-Changelog, 0.1.0
+   backfilled). Promoted `ROADMAP.md` out of `.gitignore`. Added a
+   `Core` section to the unified docs hub
+   (`docs-site/docs/core.md`).
 
 ### P1 - Strategic alignment
 
