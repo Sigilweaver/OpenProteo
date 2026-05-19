@@ -32,3 +32,9 @@ A path is treated as Bruker when:
 
 The conformance suite exercises timsTOF Pro, fleX, Pro 2, and HT
 acquisitions from public PRIDE datasets.
+
+## See also
+
+- [OpenTimsTDF documentation](https://sigilweaver.app/opentdf/docs/) -
+  full reference, format notes, and changelog for the Bruker reader.
+- [OpenTimsTDF on GitHub](https://github.com/Sigilweaver/OpenTDF).

@@ -36,3 +36,9 @@ A path is treated as Waters when:
 
 The conformance suite exercises Waters Xevo G2-XS, Synapt G2-Si, and
 Vion IMS QTof corpora.
+
+## See also
+
+- [OpenWRaw documentation](https://sigilweaver.app/openwraw/docs/) -
+  full reference, format notes, and changelog for the Waters reader.
+- [OpenWRaw on GitHub](https://github.com/Sigilweaver/OpenWRaw).

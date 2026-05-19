@@ -32,3 +32,9 @@ A path is treated as Thermo when:
 The conformance suite exercises Thermo Q Exactive UHMR, Q Exactive
 HF-X, Orbitrap Fusion Lumos, and Exploris 480 corpora. See the
 `opentfraw` repository for the full matrix.
+
+## See also
+
+- [OpenTFRaw documentation](https://sigilweaver.app/opentfraw/docs/) -
+  full reference, format notes, and changelog for the Thermo reader.
+- [OpenTFRaw on GitHub](https://github.com/Sigilweaver/OpenTFRaw).
