@@ -91,6 +91,8 @@ manual operator actions after artifact review.
 | `--push` | Push the tag to `origin`. Implies `--tag`. Requires `--apply`. |
 | `--apply` | Required for any mutation. Without it, every step is a dry-run. |
 | `--write-stack-md` | Overwrite `STACK.md` with the current pin table. Requires `--apply`. |
+| `--gate-prolance` | Run `scripts/truthtest-prolance.sh` before tagging. With `--apply`, aborts tag creation on non-zero exit. Without `--apply`, only reports the gate command. |
+| `--gate-with-corpus` | Pass `--with-corpus` to the ProLance gate (requires `ProLance/corpus/`). Implies `--gate-prolance`. |
 | `--help` | Print usage. |
 
 ## Exit codes
@@ -101,3 +103,50 @@ manual operator actions after artifact review.
 | 1 | Unexpected error (tag already exists, etc.). |
 | 2 | Dirty working tree in one of the five repos while `--apply` was set. |
 | 3 | Missing sibling repo on disk. |
+| 4 | ProLance truth-test gate failed (under `--gate-prolance --apply`). |
+
+## Stack truth test (ProLance gate)
+
+ProLance routes all vendor I/O through `openproteo-io` and owns the
+end-to-end coverage that exercises the stack: vendor ingest, mzML
+roundtrip, and Lance store read/write. The truth-test gate runs
+ProLance's integration tests against the current sibling checkouts so
+the release reflects what actually works together.
+
+The default mode runs:
+
+- `cargo build --workspace`
+- `cargo test -p prolance-ms --features vendors`
+- `cargo test -p prolance-core`
+
+The fixture-gated tests in `prolance-ms` exercise `vendor::ingest` for
+Thermo / Bruker / Waters via `openproteo_io::collect` whenever sample
+files are present. The `--with-corpus` mode additionally runs
+`cargo test --workspace --all-features`, which exercises the full
+mzML -> Lance -> mzML roundtrip in `prolance-cli` (requires a
+populated `ProLance/corpus/`).
+
+```sh
+# Run the gate standalone.
+scripts/truthtest-prolance.sh
+
+# Run with the local ProLance corpus (slower, exercises end-to-end
+# mzML -> Lance -> mzML).
+scripts/truthtest-prolance.sh --with-corpus
+
+# Gate a real release.
+scripts/release-stack.sh --name vX.Y.Z --tag --gate-prolance --apply
+```
+
+The gate exits with:
+
+| Code | Meaning |
+|------|---------|
+| 0 | Green - safe to tag. |
+| 2 | `ProLance/` (or `ProLance/corpus/` with `--with-corpus`) missing. |
+| 3 | `cargo build --workspace` failed in ProLance. |
+| 4 | `cargo test` failed in ProLance. |
+
+The gate is opt-in - `release-stack.sh` runs without it by default.
+Run it for any release that touches a vendor crate, `openproteo-core`,
+or `openproteo-io`.

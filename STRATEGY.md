@@ -237,9 +237,12 @@ work package.
     parsers work on cloud-resident vendor files without a download step. Phase 4 on
     the OpenProteoCore roadmap. Estimated: large; do after P0-P2 stabilize.
 
-11. **ProLance integration tests as the stack's truth test.** Once ProLance routes
-    through the umbrella (P0 #1), promote ProLance's end-to-end ingest + Lance write +
-    mzML roundtrip into the stack-release gate. Estimated: small (after P0 #1).
+11. **ProLance integration tests as the stack's truth test.** [DONE]
+    `scripts/truthtest-prolance.sh` runs ProLance's `cargo build` +
+    `cargo test --features vendors` (optionally `--with-corpus` for the
+    full mzML -> Lance roundtrip). `scripts/release-stack.sh
+    --gate-prolance` invokes it before tagging the umbrella; non-zero
+    exit aborts tag creation. Documented in `docs/RELEASE.md`.
 
 ---
 

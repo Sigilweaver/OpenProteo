@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- ProLance truth-test gate. New `scripts/truthtest-prolance.sh` runs
+  `cargo build --workspace` and `cargo test --features vendors` (and
+  optionally `--with-corpus` for the full mzML -> Lance roundtrip) in
+  the sibling ProLance checkout. `scripts/release-stack.sh` gains
+  `--gate-prolance` and `--gate-with-corpus` flags that invoke the
+  gate before tagging the umbrella; a non-zero exit aborts tag
+  creation. Documented in `docs/RELEASE.md`.
 - Typed `openproteo_io::Error` enum with `thiserror`-based variants
   (`UnsupportedFormat`, `FeatureDisabled`, `Io`, `Core`, feature-gated
   `Thermo`/`Bruker`/`Waters`, `Mzml`). Replaces `Box<dyn Error>` in
@@ -44,3 +51,5 @@ All notable changes to this project will be documented in this file.
   Shipped in ProLance `develop` commits `aece8f6` (single vendor
   ingester via `openproteo_io::collect`) and `708dbc3` (mzML writer
   delegates to `openproteo-core`).
+- STRATEGY P3 #11 (ProLance integration tests as the stack truth test)
+  marked DONE via the new `--gate-prolance` flag.
