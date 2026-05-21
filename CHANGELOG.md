@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- _No unreleased changes yet._
+
+## [1.0.0] - 2026-05-18
+
+First stable release of the OpenProteo umbrella. Pins the stack at
+`openproteo-core = 0.1.0`, `opentfraw = 1.0.5`, `opentimstdf = 1.0.5`,
+`openwraw = 1.0.4`. The library crate `openproteo-io = 1.0.0` is
+published to crates.io; the `vendor2mzml` CLI ships as a binary
+release artifact only.
+
 ### Added
 
 - Shared corpus schema and fetcher (STRATEGY P3 #9). New

@@ -1,0 +1,32 @@
+# Publish openproteo-io to crates.io on tag push.
+#
+# Only the library crate (`openproteo-io`) is published. The CLI
+# (`openproteo-io-cli` / `vendor2mzml`) ships from binary release
+# artifacts only and is intentionally not on crates.io.
+#
+# Requires repository secret CARGO_REGISTRY_TOKEN with publish access
+# to the `openproteo-io` crate.
+
+name: Publish
+
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  cargo-publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo publish -p openproteo-io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

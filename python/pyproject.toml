@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openproteo"
-version = "0.2.0"
+version = "1.0.0"
 description = "Open proteomics: one install for the OpenProteo vendor reader stack (Thermo, Bruker, Waters)"
 readme = "README.md"
 license = { text = "Apache-2.0" }
