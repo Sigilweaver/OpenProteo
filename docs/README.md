@@ -1,7 +1,7 @@
 # openproteo docs
 
 This directory is the [Docusaurus](https://docusaurus.io) site that
-publishes to <https://sigilweaver.com/openproteo/>.
+publishes to <https://sigilweaver.app/openproteo/>.
 
 ## Develop
 
