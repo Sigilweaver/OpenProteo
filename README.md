@@ -1,50 +1,111 @@
-# openproteo-io
+# OpenProteo
 
-> Working name. See [RENAME-TBD.md](RENAME-TBD.md) for the final-name
-> discussion.
+[![CI](https://github.com/Sigilweaver/OpenProteo/actions/workflows/ci.yml/badge.svg)](https://github.com/Sigilweaver/OpenProteo/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/openproteo-io.svg)](https://crates.io/crates/openproteo-io)
+[![PyPI](https://img.shields.io/pypi/v/openproteo.svg)](https://pypi.org/project/openproteo/)
+[![docs](https://img.shields.io/badge/docs-sigilweaver.com-blue)](https://sigilweaver.com/openproteo/)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 
-> Umbrella of the OpenProteo stack for proteomics raw-file access.
-> Vendor readers
-> [OpenTFRaw](https://github.com/Sigilweaver/OpenTFRaw) (Thermo),
-> [OpenTimsTDF](https://github.com/Sigilweaver/OpenTDF) (Bruker), and
-> [OpenWRaw](https://github.com/Sigilweaver/OpenWRaw) (Waters) sit on
-> top of shared core
-> [openproteo-core](https://github.com/Sigilweaver/OpenProteoCore).
-> Columnar storage and analysis lives in
-> [ProLance](https://github.com/Sigilweaver/ProLance), a downstream
-> consumer.
+> **One stack. Three vendors. Open Rust.**
+>
+> OpenProteo is the open-source Rust stack for proteomics raw-file
+> access. Read Thermo, Bruker, and Waters acquisitions through a single
+> API, convert them to PSI-MS [mzML 1.1.0](https://www.psidev.info/mzML)
+> with the canonical writer, and stream them straight into Arrow for
+> downstream analytics. No vendor SDKs, no Windows-only DLLs, no
+> binary blobs in your release pipeline.
 
-`openproteo-io` is the umbrella crate that ties together the open Rust
-mass-spec parsers:
+## The stack
 
-| Vendor | Format | Crate |
+| Layer | Crate | What it does |
 | --- | --- | --- |
-| Thermo Fisher | `.raw` (Finnigan) | [`opentfraw`](https://github.com/Sigilweaver/OpenTFRaw) |
-| Bruker | timsTOF `.d/` (TDF) | [`opentimstdf`](https://github.com/Sigilweaver/OpenTDF) |
-| Waters | MassLynx `.raw/` bundle | [`openwraw`](https://github.com/Sigilweaver/OpenWRaw) |
+| Umbrella | [`openproteo-io`](crates/openproteo-io) | Feature-gated re-exports + `detect_format` + `convert_to_mzml` |
+| CLI | [`openproteo-io-cli`](crates/openproteo-io-cli) | `vendor2mzml` one-shot binary |
+| Python | [`openproteo`](python) | Metapackage exposing the converter from Python |
+| Shared core | [openproteo-core](https://github.com/Sigilweaver/OpenProteoCore) | `SpectrumRecord`, Arrow batch, mzML writer |
+| Thermo `.raw` | [opentfraw](https://github.com/Sigilweaver/OpenTFRaw) | Finnigan reader |
+| Bruker `.d/` | [opentimstdf](https://github.com/Sigilweaver/OpenTimsTDF) | timsTOF TDF reader |
+| Waters `.raw/` | [openwraw](https://github.com/Sigilweaver/OpenWRaw) | MassLynx bundle reader |
 
-It re-exports each vendor parser behind a Cargo feature, adds
-auto-detection of vendor format from a path, and provides a single
-`vendor2mzml` binary that converts any supported input to PSI-MS
-mzML 1.1.0 via the canonical writer in
-[`openproteo-core`](https://github.com/Sigilweaver/OpenProteoCore).
+Current pinned stack lives in [STACK.md](STACK.md).
 
-## Crates
+## Install
 
-* `crates/openproteo-io` (lib) - feature-gated vendor re-exports plus
-  `detect_format` / `convert_to_mzml` helpers.
-* `crates/openproteo-io-cli` (bin `vendor2mzml`) - the one-stop CLI.
-* `crates/openproteo-io-py` (PyO3) - Python bindings exposing zero-copy
-  NumPy views (planned).
+### CLI
 
-## Quick start
+Pre-built `vendor2mzml` binaries land on the GitHub
+[Releases](https://github.com/Sigilweaver/OpenProteo/releases) page.
+
+Or build from source:
 
 ```sh
-cargo run -p openproteo-io-cli --release -- \
-    /path/to/sample.raw /tmp/sample.mzML --indexed
+cargo install openproteo-io-cli --features all
 ```
+
+### Rust library
+
+```toml
+[dependencies]
+openproteo-io = { version = "1.0", features = ["all"] }
+```
+
+Vendor features are independent (`thermo`, `bruker`, `waters`) so you
+only compile what you ship.
+
+### Python
+
+```sh
+pip install openproteo
+```
+
+## Use it
+
+### Convert a file
+
+```sh
+vendor2mzml /data/sample.raw /tmp/sample.mzML --indexed
+```
+
+`vendor2mzml` sniffs the format from the path (or directory layout for
+Bruker `.d/` and Waters `.raw/` bundles), routes through the matching
+vendor crate, and writes indexed PSI-MS mzML 1.1.0.
+
+### From Rust
+
+```rust
+use openproteo_io::{detect_format, convert_to_mzml};
+
+let fmt = detect_format("sample.raw")?;
+println!("detected: {fmt:?}");
+convert_to_mzml("sample.raw", "sample.mzML", /* indexed */ true)?;
+```
+
+### From Python
+
+```python
+import openproteo
+
+openproteo.to_mzml("sample.raw", "sample.mzML", indexed=True)
+```
+
+## Documentation
+
+Full reference, conversion semantics, and the per-vendor parser notes
+live at [**sigilweaver.com/openproteo**](https://sigilweaver.com/openproteo/).
+
+The source for that site is in [`docs/`](docs/) (Docusaurus). See
+[docs/README.md](docs/README.md) for the build commands.
+
+## Contributing
+
+Bug reports and PRs are welcome on any of the five repos. See
+[SECURITY.md](SECURITY.md) for the security policy.
+
+This umbrella ships releases via [`scripts/release-stack.sh`](scripts/release-stack.sh)
+which gates on the downstream [ProLance](https://github.com/Sigilweaver/ProLance)
+truth-test before tagging.
 
 ## License
 
-Apache-2.0. The vendor crates each carry their own license headers and
-upstream attribution notes; this repo only orchestrates them.
+[Apache-2.0](LICENSE). Each vendor crate carries its own header and
+upstream attribution; this repo only orchestrates them.

@@ -7,7 +7,9 @@ API (with FTP fallback), downloads files into a repo-local corpus
 directory, and writes a ``manifest.json`` keyed by
 ``{accession}/{original_filename}``.
 
-Schema: see ``docs/CORPUS.md``.
+Schema: each `sources.json` is a list of vendor-tagged entries with
+``url``, ``sha256``, ``ext`` (file extension), ``vendor``, ``mode``
+(acquisition mode), and an optional ``accession`` (e.g. PRIDE/MetaboLights).
 
 Per-repo wrappers pass repo-local paths in via the CLI; the script
 itself contains no vendor- or repo-specific defaults beyond an

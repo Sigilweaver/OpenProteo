@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 
 - _No unreleased changes yet._
 
+## [1.0.1] - 2026-05-21
+
+Maintenance release. Pins the stack at `openproteo-core = 1.0.0`,
+`opentfraw = 1.0.6`, `opentimstdf = 1.0.6`, `openwraw = 1.0.5`. Raises
+the workspace MSRV to 1.85 (required by transitive `arrow` 58.x).
+
+### Changed
+
+- Workspace `rust-version` bumped from `1.75` to `1.85`. CI MSRV job
+  updated to match.
+- All sibling-repo deps now resolve from crates.io. CI no longer
+  multi-checks-out the vendor repos; cargo pulls them as ordinary
+  registry crates.
+- Docusaurus site moved from `docs-site/` to `docs/`. The legacy
+  `docs/CORPUS.md` and `docs/RELEASE.md` notes were folded into
+  inline docstrings and removed from the tree (see git history for
+  the originals).
+- Root `README.md` rewritten as a proper project landing page.
+
 ## [1.0.0] - 2026-05-18
 
 First stable release of the OpenProteo umbrella. Pins the stack at

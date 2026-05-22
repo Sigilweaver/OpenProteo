@@ -20,7 +20,11 @@ fn smoke(input: PathBuf) {
     ));
     openproteo_io::convert_to_mzml(det, &out, false).expect("convert");
     let bytes = fs::read(&out).expect("read");
-    assert!(bytes.len() > 4096, "mzML suspiciously small: {}", bytes.len());
+    assert!(
+        bytes.len() > 4096,
+        "mzML suspiciously small: {}",
+        bytes.len()
+    );
     let head = std::str::from_utf8(&bytes[..256.min(bytes.len())]).unwrap_or("");
     assert!(head.contains("<?xml"), "missing xml preamble");
     assert!(

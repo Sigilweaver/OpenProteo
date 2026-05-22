@@ -5,12 +5,12 @@ Current pinned versions across the OpenProteo stack. Regenerate with
 
 ## Pinned versions
 
-| Component | Version | SHA |
-|-----------|---------|-----|
-| OpenProteo (umbrella) | 0.1.0 | `2996fc2` |
-| openproteo-core | 0.1.0 | `c5ced4d` |
-| opentfraw | 1.0.4 | `d0bb155` |
-| opentimstdf | 1.0.4 | `467dff0` |
-| openwraw | 1.0.3 | `7d94739` |
+| Component | Version |
+|-----------|---------|
+| OpenProteo (umbrella) | 1.0.1 |
+| openproteo-core | 1.0.0 |
+| opentfraw | 1.0.6 |
+| opentimstdf | 1.0.6 |
+| openwraw | 1.0.5 |
 
-See [docs/RELEASE.md](docs/RELEASE.md) for the procedure.
+See [`scripts/release-stack.sh`](scripts/release-stack.sh) for the procedure.

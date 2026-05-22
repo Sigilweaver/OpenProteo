@@ -187,7 +187,10 @@ impl Spectrum {
         py: Python<'py>,
     ) -> PyResult<Option<Bound<'py, PyArray1<f32>>>> {
         let rec = self.rec.as_mut().ok_or_else(consumed_err)?;
-        Ok(rec.inv_mobility_per_peak.take().map(|v| PyArray1::from_vec(py, v)))
+        Ok(rec
+            .inv_mobility_per_peak
+            .take()
+            .map(|v| PyArray1::from_vec(py, v)))
     }
 
     /// Precursor metadata for MS2+ spectra, as a `dict`, or `None`.
@@ -279,9 +282,7 @@ fn to_mzml(input: PathBuf, output: PathBuf, indexed: bool) -> PyResult<()> {
 #[pyfunction]
 fn iter_spectra(py: Python<'_>, path: PathBuf) -> PyResult<Py<SpectrumIter>> {
     let detected = detected_or_err(&path)?;
-    let (records, _meta) = py
-        .detach(|| collect_records(&detected))
-        .map_err(map_err)?;
+    let (records, _meta) = py.detach(|| collect_records(&detected)).map_err(map_err)?;
     Py::new(
         py,
         SpectrumIter {
@@ -314,9 +315,7 @@ mod arrow_bridge {
             return Err(PyValueError::new_err("batch_size must be > 0"));
         }
         let detected = detected_or_err(&path)?;
-        let (records, meta) = py
-            .detach(|| collect_records(&detected))
-            .map_err(map_err)?;
+        let (records, meta) = py.detach(|| collect_records(&detected)).map_err(map_err)?;
         let mobility_kind = meta.mobility_array_kind;
         let batches = py
             .detach(|| build_batches(records, batch_size, mobility_kind))

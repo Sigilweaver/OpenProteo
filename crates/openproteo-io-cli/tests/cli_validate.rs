@@ -10,9 +10,7 @@ use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 use std::process::Command;
 
-use openproteo_core::{
-    write_mzml, CvTerm, Polarity, PrecursorInfo, RunMetadata, SpectrumRecord,
-};
+use openproteo_core::{write_mzml, CvTerm, Polarity, PrecursorInfo, RunMetadata, SpectrumRecord};
 use openproteo_io::VecSource;
 
 fn bin_path() -> PathBuf {
@@ -46,7 +44,10 @@ fn make_record(index: usize, scan: u32, ms_level: u32, rt_sec: f64) -> SpectrumR
             intensity: Some(1.0e5),
             collision_energy: Some(28.0),
             ce_is_nce: true,
-            precursor_native_id: Some(format!("controllerType=0 controllerNumber=1 scan={}", scan - 1)),
+            precursor_native_id: Some(format!(
+                "controllerType=0 controllerNumber=1 scan={}",
+                scan - 1
+            )),
             activation: Some(openproteo_core::Activation::HCD),
             analyzer: None,
         })
@@ -180,9 +181,13 @@ fn validate_unknown_input_returns_two() {
         .expect("run vendor2mzml");
     let _ = std::fs::remove_file(&path);
 
-    assert_eq!(out.status.code(), Some(2), "stdout: {}, stderr: {}",
+    assert_eq!(
+        out.status.code(),
+        Some(2),
+        "stdout: {}, stderr: {}",
         String::from_utf8_lossy(&out.stdout),
-        String::from_utf8_lossy(&out.stderr));
+        String::from_utf8_lossy(&out.stderr)
+    );
 }
 
 // ----- bad-mzml helper -----------------------------------------------
@@ -248,8 +253,7 @@ fn bad_mzml_with_array_length_mismatch() -> String {
 }
 
 fn base64_encode(data: &[u8]) -> String {
-    const T: &[u8; 64] =
-        b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = Vec::with_capacity(data.len().div_ceil(3) * 4);
     let mut i = 0;
     while i + 2 < data.len() {

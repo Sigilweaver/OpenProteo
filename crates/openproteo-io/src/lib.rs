@@ -21,7 +21,7 @@ pub use error::{Error, Result};
 pub use openproteo_core as core;
 
 #[cfg(feature = "arrow")]
-pub use openproteo_core::arrow as arrow;
+pub use openproteo_core::arrow;
 
 /// Re-exports of each vendor parser, gated by feature.
 pub mod vendor {
@@ -129,11 +129,7 @@ fn is_thermo_raw(path: &Path) -> bool {
 /// correct vendor crate's `write_mzml` (or `write_indexed_mzml`) based
 /// on `indexed`.
 #[allow(clippy::needless_pass_by_value)] // for symmetry with detect_format
-pub fn convert_to_mzml(
-    detected: Detected,
-    output: &Path,
-    indexed: bool,
-) -> Result<()> {
+pub fn convert_to_mzml(detected: Detected, output: &Path, indexed: bool) -> Result<()> {
     use std::fs::File;
     use std::io::BufWriter;
     let f = File::create(output)?;
@@ -207,11 +203,7 @@ fn write_to(
 }
 
 #[cfg(feature = "thermo")]
-fn thermo_convert(
-    path: &Path,
-    out: &mut impl std::io::Write,
-    indexed: bool,
-) -> Result<()> {
+fn thermo_convert(path: &Path, out: &mut impl std::io::Write, indexed: bool) -> Result<()> {
     use std::fs::File;
     use std::io::BufReader;
     let raw = opentfraw::RawFileReader::open_path(path)?;
@@ -239,8 +231,10 @@ fn thermo_convert(
 #[allow(clippy::needless_pass_by_value)]
 pub fn collect(
     detected: Detected,
-) -> Result<(Vec<openproteo_core::SpectrumRecord>, openproteo_core::RunMetadata)>
-{
+) -> Result<(
+    Vec<openproteo_core::SpectrumRecord>,
+    openproteo_core::RunMetadata,
+)> {
     #[allow(unused_imports)]
     use openproteo_core::SpectrumSource;
     match detected.format {
@@ -250,8 +244,7 @@ pub fn collect(
                 use std::fs::File;
                 use std::io::BufReader;
                 let raw = opentfraw::RawFileReader::open_path(&detected.path)?;
-                let mut source =
-                    BufReader::with_capacity(2 << 20, File::open(&detected.path)?);
+                let mut source = BufReader::with_capacity(2 << 20, File::open(&detected.path)?);
                 let filename = detected
                     .path
                     .file_name()
@@ -392,7 +385,10 @@ mod tests {
         let e: Error = std::io::Error::other("boom").into();
         assert!(matches!(e, Error::Io(_)));
         let e = Error::FeatureDisabled { vendor: "thermo" };
-        assert_eq!(e.to_string(), "openproteo-io was built without the 'thermo' feature");
+        assert_eq!(
+            e.to_string(),
+            "openproteo-io was built without the 'thermo' feature"
+        );
         let e = Error::UnsupportedFormat(PathBuf::from("/tmp/nope"));
         assert!(matches!(e, Error::UnsupportedFormat(_)));
     }

@@ -29,32 +29,6 @@ jobs:
     steps:
       - name: Checkout OpenProteo
         uses: actions/checkout@v4
-        with:
-          path: OpenProteo
-
-      - name: Checkout OpenProteoCore
-        uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenProteoCore
-          path: OpenProteoCore
-
-      - name: Checkout OpenTFRaw
-        uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenTFRaw
-          path: OpenTFRaw
-
-      - name: Checkout OpenTDF
-        uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenTimsTDF
-          path: OpenTDF
-
-      - name: Checkout OpenWRaw
-        uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenWRaw
-          path: OpenWRaw
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -63,24 +37,18 @@ jobs:
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: OpenProteo
 
       - name: cargo fmt
-        working-directory: OpenProteo
         run: cargo fmt --all -- --check
 
       - name: cargo clippy
-        working-directory: OpenProteo
         run: cargo clippy --workspace --all-features --all-targets -- -D warnings
 
       - name: cargo test
-        working-directory: OpenProteo
         run: cargo test --workspace --all-features
 
       - name: vendor2mzml validate against shared corpus (best-effort)
         if: matrix.os == 'ubuntu-latest'
-        working-directory: OpenProteo
         env:
           OPENPROTEO_THERMO_RAW: ${{ secrets.OPENPROTEO_THERMO_RAW }}
           OPENPROTEO_BRUKER_D: ${{ secrets.OPENPROTEO_BRUKER_D }}
@@ -102,36 +70,15 @@ jobs:
           done
 
   msrv:
-    name: MSRV check (1.75)
+    name: MSRV check (1.85)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: OpenProteo
-      - uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenProteoCore
-          path: OpenProteoCore
-      - uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenTFRaw
-          path: OpenTFRaw
-      - uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenTimsTDF
-          path: OpenTDF
-      - uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenWRaw
-          path: OpenWRaw
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.75
+          toolchain: 1.85
       - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: OpenProteo
       - name: cargo check (MSRV)
-        working-directory: OpenProteo
         run: cargo check --workspace --all-features
 
   python:
@@ -143,45 +90,23 @@ jobs:
         python: ["3.9", "3.12"]
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: OpenProteo
-      - uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenProteoCore
-          path: OpenProteoCore
-      - uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenTFRaw
-          path: OpenTFRaw
-      - uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenTimsTDF
-          path: OpenTDF
-      - uses: actions/checkout@v4
-        with:
-          repository: Sigilweaver/OpenWRaw
-          path: OpenWRaw
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: OpenProteo
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Install maturin + pytest
         run: pip install 'maturin>=1.5,<2' pytest pyarrow numpy
       - name: Build and install openproteo-io
-        working-directory: OpenProteo/crates/openproteo-io-py
+        working-directory: crates/openproteo-io-py
         run: maturin develop --release --features pyo3/extension-module
       - name: Install openproteo metapackage
-        working-directory: OpenProteo
         run: pip install ./python
       - name: Import smoke test
         run: python -c "import openproteo_io; print(openproteo_io.__version__ if hasattr(openproteo_io, '__version__') else 'ok')"
       - name: Metapackage import smoke
         run: python -c "import openproteo; print(openproteo.__version__); assert callable(openproteo.to_mzml)"
       - name: Metapackage tests
-        working-directory: OpenProteo
         run: pytest python/tests -v
 
   docs:
@@ -193,8 +118,8 @@ jobs:
         with:
           bun-version: latest
       - name: Install
-        working-directory: docs-site
+        working-directory: docs
         run: bun install --frozen-lockfile
       - name: Build
-        working-directory: docs-site
+        working-directory: docs
         run: bun run build

@@ -35,7 +35,7 @@ const config: Config = {
                 docs: {
                     routeBasePath: '/',
                     sidebarPath: './sidebars.ts',
-                    editUrl: 'https://github.com/Sigilweaver/OpenProteo/tree/main/docs-site/',
+                    editUrl: 'https://github.com/Sigilweaver/OpenProteo/tree/main/docs/',
                 },
                 blog: false,
                 sitemap: {

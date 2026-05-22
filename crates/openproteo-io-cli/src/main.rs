@@ -83,10 +83,7 @@ enum ProfileFormat {
     Text,
 }
 
-const LONG_VERSION: &str = concat!(
-    env!("CARGO_PKG_VERSION"),
-    "\n  openproteo-core ",
-);
+const LONG_VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), "\n  openproteo-core ",);
 
 fn long_version_str() -> &'static str {
     use std::sync::OnceLock;
@@ -217,7 +214,12 @@ fn run_info(args: InfoArgs) -> ExitCode {
             return ExitCode::from(1);
         }
     };
-    let summary = summarize(&detected, &metadata, &records, t_start.elapsed().as_secs_f64());
+    let summary = summarize(
+        &detected,
+        &metadata,
+        &records,
+        t_start.elapsed().as_secs_f64(),
+    );
 
     if args.json {
         println!("{}", summary.to_json());
@@ -384,13 +386,27 @@ fn run_validate(args: ValidateArgs) -> ExitCode {
                 Err(e) => Err(format!("read mzML: {e}")),
             }
         } else {
-            emit_validate_result(args.json, &args.input, "unknown", 0, Err("input is not a recognized vendor format or mzML file"), 0.0);
+            emit_validate_result(
+                args.json,
+                &args.input,
+                "unknown",
+                0,
+                Err("input is not a recognized vendor format or mzML file"),
+                0.0,
+            );
             return ExitCode::from(2);
         };
     let (records, kind) = match records_res {
         Ok(p) => p,
         Err(e) => {
-            emit_validate_result(args.json, &args.input, "error", 0, Err(&e), t_start.elapsed().as_secs_f64());
+            emit_validate_result(
+                args.json,
+                &args.input,
+                "error",
+                0,
+                Err(&e),
+                t_start.elapsed().as_secs_f64(),
+            );
             return ExitCode::from(1);
         }
     };
@@ -480,11 +496,6 @@ fn emit_validate_result_with_variant(
             kind
         );
     } else {
-        eprintln!(
-            "FAIL: {} ({}): {}",
-            input.display(),
-            kind,
-            err
-        );
+        eprintln!("FAIL: {} ({}): {}", input.display(), kind, err);
     }
 }
