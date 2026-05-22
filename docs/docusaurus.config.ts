@@ -84,11 +84,6 @@ const config: Config = {
                     label: 'GitHub',
                     position: 'right',
                 },
-                {
-                    href: 'https://sigilweaver.app',
-                    label: 'Website',
-                    position: 'right',
-                },
             ],
         },
         footer: {
@@ -107,13 +102,6 @@ const config: Config = {
                         { label: 'OpenTFRaw (Thermo)', href: 'https://github.com/Sigilweaver/OpenTFRaw' },
                         { label: 'OpenTDF (Bruker)', href: 'https://github.com/Sigilweaver/OpenTDF' },
                         { label: 'OpenWRaw (Waters)', href: 'https://github.com/Sigilweaver/OpenWRaw' },
-                    ],
-                },
-                {
-                    title: 'Sigilweaver',
-                    items: [
-                        { label: 'Website', href: 'https://sigilweaver.app' },
-                        { label: 'Other projects', href: 'https://sigilweaver.app#projects' },
                     ],
                 },
                 {
