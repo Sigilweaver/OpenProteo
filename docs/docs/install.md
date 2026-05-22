@@ -12,7 +12,7 @@ by side:
 +-- OpenProteoCore/
 +-- OpenProteo/
 +-- OpenTFRaw/
-+-- OpenTDF/
++-- OpenTimsTDF/
 +-- OpenWRaw/
 ```
 

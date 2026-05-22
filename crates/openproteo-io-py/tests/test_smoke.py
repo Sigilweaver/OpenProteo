@@ -1,6 +1,6 @@
 """Smoke tests for openproteo-io Python bindings.
 
-These tests require the OpenTFRaw / OpenTDF / OpenWRaw test corpora.
+These tests require the OpenTFRaw / OpenTimsTDF / OpenWRaw test corpora.
 Set the env vars OPENPROTEO_THERMO_RAW, OPENPROTEO_BRUKER_D,
 OPENPROTEO_WATERS_RAW to point at one sample each; tests for vendors
 without a corpus path are skipped.

@@ -100,7 +100,7 @@ const config: Config = {
                     title: 'Vendor readers',
                     items: [
                         { label: 'OpenTFRaw (Thermo)', href: 'https://github.com/Sigilweaver/OpenTFRaw' },
-                        { label: 'OpenTDF (Bruker)', href: 'https://github.com/Sigilweaver/OpenTDF' },
+                        { label: 'OpenTimsTDF (Bruker)', href: 'https://github.com/Sigilweaver/OpenTimsTDF' },
                         { label: 'OpenWRaw (Waters)', href: 'https://github.com/Sigilweaver/OpenWRaw' },
                     ],
                 },

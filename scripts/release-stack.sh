@@ -2,7 +2,7 @@
 # release-stack.sh - coordinated stack release helper for OpenProteo.
 #
 # Reads pinned versions across the five-repo stack (this repo +
-# OpenProteoCore, OpenTFRaw, OpenTDF, OpenWRaw), emits a release-notes
+# OpenProteoCore, OpenTFRaw, OpenTimsTDF, OpenWRaw), emits a release-notes
 # draft aggregated from each repo's CHANGELOG.md, and optionally creates
 # and pushes an annotated umbrella SemVer tag on this repo.
 #
@@ -45,7 +45,7 @@ REPOS=(
     "OpenProteo"
     "OpenProteoCore"
     "OpenTFRaw"
-    "OpenTDF"
+    "OpenTimsTDF"
     "OpenWRaw"
 )
 
@@ -54,14 +54,14 @@ declare -A VERSION_FILE
 VERSION_FILE[OpenProteo]="crates/openproteo-io-cli/Cargo.toml"
 VERSION_FILE[OpenProteoCore]="Cargo.toml"
 VERSION_FILE[OpenTFRaw]="Cargo.toml"
-VERSION_FILE[OpenTDF]="Cargo.toml"
+VERSION_FILE[OpenTimsTDF]="Cargo.toml"
 VERSION_FILE[OpenWRaw]="Cargo.toml"
 
 declare -A DISPLAY_NAME
 DISPLAY_NAME[OpenProteo]="OpenProteo (umbrella)"
 DISPLAY_NAME[OpenProteoCore]="openproteo-core"
 DISPLAY_NAME[OpenTFRaw]="opentfraw"
-DISPLAY_NAME[OpenTDF]="opentimstdf"
+DISPLAY_NAME[OpenTimsTDF]="opentimstdf"
 DISPLAY_NAME[OpenWRaw]="openwraw"
 
 # Defaults.

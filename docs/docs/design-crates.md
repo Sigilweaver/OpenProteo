@@ -12,7 +12,7 @@ together.
 | `OpenProteoCore` | `openproteo-core`                                         |
 | `OpenProteo`     | `openproteo-io`, `openproteo-io-cli`, `openproteo-io-py`  |
 | `OpenTFRaw`      | `opentfraw`                                               |
-| `OpenTDF`        | `opentimstdf`                                             |
+| `OpenTimsTDF`        | `opentimstdf`                                             |
 | `OpenWRaw`       | `openwraw`                                                |
 
 ## Why five repos and not one monorepo?

@@ -55,7 +55,7 @@ relevant repo - but the umbrella is a fine entry point and we will
 forward as needed:
 
 - Thermo `.raw`: [OpenTFRaw](https://github.com/Sigilweaver/OpenTFRaw)
-- Bruker `.d/` (timsTOF): [OpenTimsTDF](https://github.com/Sigilweaver/OpenTDF)
+- Bruker `.d/` (timsTOF): [OpenTimsTDF](https://github.com/Sigilweaver/OpenTimsTDF)
 - Waters MassLynx `.raw/`: [OpenWRaw](https://github.com/Sigilweaver/OpenWRaw)
 - Shared core: [openproteo-core](https://github.com/Sigilweaver/OpenProteoCore)
 

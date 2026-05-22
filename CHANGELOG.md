@@ -93,7 +93,7 @@ release artifact only.
   `manifest.json` shape. New `scripts/fetch_corpus.py` is a
   vendor-agnostic port of OpenTFRaw's fetcher, parameterized by
   `--sources`, `--corpus-dir`, `--manifest`, and `--ext-pattern`.
-  OpenTFRaw now wraps it via a small shim; OpenTDF and OpenWRaw
+  OpenTFRaw now wraps it via a small shim; OpenTimsTDF and OpenWRaw
   carry stub `sources.json` files awaiting directory-bundle fetch
   support.
 - README now leads with a stack callout naming the umbrella, the

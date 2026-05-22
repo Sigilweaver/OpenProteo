@@ -35,6 +35,6 @@ acquisitions from public PRIDE datasets.
 
 ## See also
 
-- [OpenTimsTDF documentation](https://sigilweaver.app/opentdf/docs/) -
+- [OpenTimsTDF documentation](https://sigilweaver.app/OpenTimsTDF/docs/) -
   full reference, format notes, and changelog for the Bruker reader.
-- [OpenTimsTDF on GitHub](https://github.com/Sigilweaver/OpenTDF).
+- [OpenTimsTDF on GitHub](https://github.com/Sigilweaver/OpenTimsTDF).

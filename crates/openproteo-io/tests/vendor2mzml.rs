@@ -51,6 +51,6 @@ fn waters_smoke() {
 #[test]
 fn bruker_smoke() {
     smoke(PathBuf::from(
-        "../../../OpenTDF/re/artifacts/cache/pride/PXD036417/NQO1-F107C_coi-N2-P_200-0C_3996.d",
+        "../../../OpenTimsTDF/re/artifacts/cache/pride/PXD036417/NQO1-F107C_coi-N2-P_200-0C_3996.d",
     ));
 }
