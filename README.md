@@ -3,8 +3,10 @@
 [![CI](https://github.com/Sigilweaver/OpenProteo/actions/workflows/ci.yml/badge.svg)](https://github.com/Sigilweaver/OpenProteo/actions/workflows/ci.yml)
 [![crates.io](https://img.shields.io/crates/v/openproteo-io.svg)](https://crates.io/crates/openproteo-io)
 [![PyPI](https://img.shields.io/pypi/v/openproteo.svg)](https://pypi.org/project/openproteo/)
-[![docs](https://img.shields.io/badge/docs-sigilweaver.app-blue)](https://sigilweaver.app/openproteo/docs/)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
+[![docs.rs](https://img.shields.io/docsrs/openproteo-io)](https://docs.rs/openproteo-io)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Rust MSRV](https://img.shields.io/badge/rust-1.88%2B-orange.svg)](https://www.rust-lang.org)
+[![Docs](https://img.shields.io/badge/docs-sigilweaver.app-blue.svg)](https://sigilweaver.app/openproteo/docs/)
 
 > **One stack. Three vendors. Open Rust.**
 >
