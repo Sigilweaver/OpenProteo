@@ -279,6 +279,59 @@ fn precursor_to_dict<'py>(py: Python<'py>, p: &PrecursorInfo) -> PyResult<Bound<
 }
 
 // ---------------------------------------------------------------------
+// RunInfo
+// ---------------------------------------------------------------------
+
+/// Run-level metadata for a vendor acquisition.
+#[pyclass(module = "openproteo_io._openproteo_io")]
+struct RunInfo {
+    meta: openproteo_core::RunMetadata,
+}
+
+#[pymethods]
+impl RunInfo {
+    /// Acquisition start timestamp when available (vendor-formatted string).
+    #[getter]
+    fn start_timestamp(&self) -> Option<&str> {
+        self.meta.start_timestamp.as_deref()
+    }
+    /// Instrument model name from the PSI-MS CV term.
+    #[getter]
+    fn instrument_name(&self) -> &str {
+        &self.meta.instrument.name
+    }
+    /// PSI-MS CV accession for the instrument (e.g. "MS:1001910").
+    #[getter]
+    fn instrument_accession(&self) -> &str {
+        self.meta.instrument.accession
+    }
+    /// Source file name (basename of the vendor acquisition path).
+    #[getter]
+    fn source_file_name(&self) -> &str {
+        &self.meta.source_file_name
+    }
+    /// Parser crate name (e.g. "opentfraw").
+    #[getter]
+    fn software_name(&self) -> &str {
+        &self.meta.software_name
+    }
+    /// Parser crate version string.
+    #[getter]
+    fn software_version(&self) -> &str {
+        &self.meta.software_version
+    }
+    fn __repr__(&self) -> String {
+        format!(
+            "<RunInfo instrument='{}' source='{}' software='{} {}'>",
+            self.meta.instrument.name,
+            self.meta.source_file_name,
+            self.meta.software_name,
+            self.meta.software_version,
+        )
+    }
+}
+
+// ---------------------------------------------------------------------
 // SpectrumIter
 // ---------------------------------------------------------------------
 
@@ -314,6 +367,14 @@ fn detect(path: PathBuf) -> Option<&'static str> {
 fn to_mzml(input: PathBuf, output: PathBuf, indexed: bool) -> PyResult<()> {
     let detected = detected_or_err(&input)?;
     openproteo_io::convert_to_mzml(detected, &output, indexed).map_err(map_err)
+}
+
+/// Return run-level metadata for a vendor acquisition without iterating spectra.
+#[pyfunction]
+fn run_info(py: Python<'_>, path: PathBuf) -> PyResult<RunInfo> {
+    let detected = detected_or_err(&path)?;
+    let (_records, meta) = py.detach(|| collect_records(&detected)).map_err(map_err)?;
+    Ok(RunInfo { meta })
 }
 
 /// Iterate every spectrum in a vendor acquisition.
@@ -404,9 +465,11 @@ fn _openproteo_io(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_class::<Spectrum>()?;
     m.add_class::<SpectrumIter>()?;
+    m.add_class::<RunInfo>()?;
     m.add_function(wrap_pyfunction!(detect, m)?)?;
     m.add_function(wrap_pyfunction!(to_mzml, m)?)?;
     m.add_function(wrap_pyfunction!(iter_spectra, m)?)?;
+    m.add_function(wrap_pyfunction!(run_info, m)?)?;
     #[cfg(feature = "arrow")]
     m.add_function(wrap_pyfunction!(arrow_bridge::read_arrow, m)?)?;
     Ok(())
