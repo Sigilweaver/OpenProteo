@@ -7,7 +7,7 @@ members = [
 ]
 
 [workspace.package]
-version = "1.1.0"
+version = "1.2.0"
 edition = "2021"
 rust-version = "1.87"
 authors = ["Nathan Riley <git@nathanriley.com>"]
@@ -18,7 +18,7 @@ documentation = "https://sigilweaver.app/openproteo/docs/"
 
 [workspace.dependencies]
 openproteo-core = "1.0.1"
-opentfraw = "1.0.6"
+opentfraw = "1.2.0"
 opentimstdf = "1.0.6"
 openwraw = "1.0.5"
 
