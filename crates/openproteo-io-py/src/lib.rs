@@ -164,6 +164,44 @@ impl Spectrum {
     fn inv_mobility(&self) -> PyResult<Option<f64>> {
         self.rec_ref().map(|r| r.inv_mobility)
     }
+    #[getter]
+    fn scan_mode(&self) -> PyResult<Option<&'static str>> {
+        self.rec_ref().map(|r| {
+            r.scan_mode.map(|m| match m {
+                openproteo_core::ScanMode::Centroid => "centroid",
+                openproteo_core::ScanMode::Profile => "profile",
+            })
+        })
+    }
+    #[getter]
+    fn analyzer(&self) -> PyResult<Option<&'static str>> {
+        self.rec_ref().map(|r| {
+            r.analyzer.map(|a| match a {
+                openproteo_core::Analyzer::ITMS => "itms",
+                openproteo_core::Analyzer::TQMS => "tqms",
+                openproteo_core::Analyzer::SQMS => "sqms",
+                openproteo_core::Analyzer::TOFMS => "tofms",
+                openproteo_core::Analyzer::FTMS => "ftms",
+                openproteo_core::Analyzer::Sector => "sector",
+            })
+        })
+    }
+    #[getter]
+    fn filter(&self) -> PyResult<Option<String>> {
+        self.rec_ref().map(|r| r.filter.clone())
+    }
+    #[getter]
+    fn ion_injection_time_ms(&self) -> PyResult<Option<f64>> {
+        self.rec_ref().map(|r| r.ion_injection_time_ms)
+    }
+    #[getter]
+    fn low_mz(&self) -> PyResult<Option<f64>> {
+        self.rec_ref().map(|r| r.low_mz)
+    }
+    #[getter]
+    fn high_mz(&self) -> PyResult<Option<f64>> {
+        self.rec_ref().map(|r| r.high_mz)
+    }
 
     /// Zero-copy NumPy view over the m/z array (owned by NumPy after this
     /// access; the spectrum no longer holds the peaks).
