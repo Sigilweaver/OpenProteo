@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-- _No unreleased changes yet._
+### Changed
+
+- `publish.yml`: crates.io publish step now uses `continue-on-error: true`
+  so re-triggered tag runs (e.g. after a pyproject.toml fix) do not fail
+  the whole workflow when the crate version was already published.
 
 ## [1.2.0] - 2026-07-02
 
