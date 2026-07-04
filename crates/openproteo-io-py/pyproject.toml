@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "openproteo-io"
-version = "1.2.0"
+version = "1.2.1"
 description = "Vendor-neutral mass-spec I/O: Thermo / Bruker / Waters to mzML, with Arrow streaming. Python bindings to the openproteo-io Rust crate."
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -40,3 +40,6 @@ module-name = "openproteo_io._openproteo_io"
 python-source = "python"
 features = ["pyo3/extension-module", "arrow"]
 manifest-path = "Cargo.toml"
+# Bundle LICENSE into the sdist (repo LICENSE is at the root and maturin
+# include forbids `..`, so a copy is co-located here).
+include = [{ path = "LICENSE", format = "sdist" }]

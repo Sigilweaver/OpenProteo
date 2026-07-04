@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openproteo"
-version = "1.2.0"
+version = "1.2.1"
 description = "Open proteomics: one install for the OpenProteo vendor reader stack (Thermo, Bruker, Waters)"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -47,3 +47,4 @@ Issues = "https://github.com/Sigilweaver/OpenProteo/issues"
 [tool.setuptools]
 packages = ["openproteo"]
 package-dir = { "" = "." }
+license-files = ["LICENSE"]

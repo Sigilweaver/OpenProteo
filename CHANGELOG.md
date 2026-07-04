@@ -4,11 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-07-04
+
 ### Changed
 
 - `publish.yml`: crates.io publish step now uses `continue-on-error: true`
   so re-triggered tag runs (e.g. after a pyproject.toml fix) do not fail
   the whole workflow when the crate version was already published.
+- Bundle `LICENSE` into both package sdists: `openproteo-io` via a maturin
+  `include`, `openproteo` via setuptools `license-files`. Enables
+  source-based installs and conda-forge packaging (which build from
+  source). Added `RELEASING.md`, the release SOP.
 
 ## [1.2.0] - 2026-07-02
 
