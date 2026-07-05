@@ -14,7 +14,8 @@ url: "https://sigilweaver.app"
 abstract: >
   OpenProteo provides high-performance, pure-Rust readers for mass spectrometry
   and proteomics raw data formats, with first-class Python bindings built on
-  PyO3 that integrate with Polars, PyArrow, and Pandas. The project covers the
+  PyO3, including a zero-copy `read_arrow()` API (enabled by default) that
+  loads directly into Polars or Pandas via PyArrow. The project covers the
   open mzML format and provides the shared core types and traits used by the
   vendor-specific reader crates (OpenTFRaw, OpenTimsTDF, OpenWRaw).
 license: "Apache-2.0"
