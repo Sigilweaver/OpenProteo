@@ -29,3 +29,14 @@ __all__ = [
 
 if _HAS_ARROW:
     __all__.append("read_arrow")
+
+    def read_polars(path, batch_size=1024):
+        """Read a vendor acquisition file into a Polars DataFrame via zero-copy Arrow.
+
+        Requires the `polars` extra (`pip install openproteo-io[polars]`).
+        """
+        import polars as pl
+
+        return pl.from_arrow(read_arrow(path, batch_size).read_all())
+
+    __all__.append("read_polars")
