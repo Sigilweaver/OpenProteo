@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-07-06
+
+### Added
+
+- `openproteo-io` (Python): `read_polars()`, a thin wrapper over the
+  existing zero-copy `read_arrow()` API returning a Polars `DataFrame`
+  directly. Gated behind a new optional `polars` extra
+  (`pip install openproteo-io[polars]`).
+
+### Fixed
+
+- `CITATION.cff`: corrected the abstract, which claimed the Python
+  bindings "integrate with Polars, PyArrow, and Pandas" as a blanket
+  statement; now names the actual `read_arrow()`/`read_polars()` APIs
+  directly.
+
 ## [1.2.1] - 2026-07-04
 
 ### Changed
