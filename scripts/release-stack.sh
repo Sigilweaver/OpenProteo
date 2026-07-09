@@ -20,12 +20,12 @@
 #   --apply             Required for any mutating action. Without it,
 #                       the script is dry-run only.
 #   --write-stack-md    Overwrite STACK.md with the current pin table.
-#   --gate-prolance     Run scripts/truthtest-prolance.sh before tagging.
+#   --gate-speclance     Run scripts/truthtest-speclance.sh before tagging.
 #                       Aborts tag creation on non-zero exit. With
 #                       --apply this gate is enforced; without --apply
 #                       only the gate command is reported.
-#   --gate-with-corpus  Pass --with-corpus to the ProLance gate. Implies
-#                       --gate-prolance.
+#   --gate-with-corpus  Pass --with-corpus to the SpecLance gate. Implies
+#                       --gate-speclance.
 #   --help              Show this help.
 #
 # Exit codes:
@@ -33,7 +33,7 @@
 #   1 unexpected error
 #   2 dirty working tree in one of the repos
 #   3 missing sibling repo
-#   4 ProLance truth-test gate failed (under --gate-prolance --apply)
+#   4 SpecLance truth-test gate failed (under --gate-speclance --apply)
 set -euo pipefail
 
 # Locations - this script lives in OpenProteo/scripts/.
@@ -84,7 +84,7 @@ while [ $# -gt 0 ]; do
         --push) DO_PUSH=1; DO_TAG=1; shift ;;
         --apply) DO_APPLY=1; shift ;;
         --write-stack-md) WRITE_STACK_MD=1; shift ;;
-        --gate-prolance) DO_GATE=1; shift ;;
+        --gate-speclance) DO_GATE=1; shift ;;
         --gate-with-corpus) DO_GATE=1; GATE_WITH_CORPUS=1; shift ;;
         --help|-h) usage; exit 0 ;;
         *) echo "Unknown flag: $1" >&2; usage >&2; exit 1 ;;
@@ -207,19 +207,19 @@ if [ "$WRITE_STACK_MD" -eq 1 ]; then
     fi
 fi
 
-# Optionally run the ProLance truth-test gate before tagging.
+# Optionally run the SpecLance truth-test gate before tagging.
 if [ "$DO_GATE" -eq 1 ]; then
-    gate_cmd=("$SCRIPT_DIR/truthtest-prolance.sh")
+    gate_cmd=("$SCRIPT_DIR/truthtest-speclance.sh")
     if [ "$GATE_WITH_CORPUS" -eq 1 ]; then
         gate_cmd+=("--with-corpus")
     fi
     if [ "$DO_APPLY" -eq 1 ]; then
         echo "[gate] running: ${gate_cmd[*]}" >&2
         if ! "${gate_cmd[@]}" >&2; then
-            echo "[error] ProLance truth-test gate failed; refusing to tag" >&2
+            echo "[error] SpecLance truth-test gate failed; refusing to tag" >&2
             exit 4
         fi
-        echo "[ok] ProLance truth-test gate green" >&2
+        echo "[ok] SpecLance truth-test gate green" >&2
     else
         echo "[dry-run] would run gate: ${gate_cmd[*]}" >&2
     fi

@@ -37,14 +37,14 @@ fn smoke(input: PathBuf) {
 #[test]
 fn thermo_smoke() {
     smoke(PathBuf::from(
-        "../../../ProLance/corpus/thermo/PXD068962_Q_Exactive_UHMR_insource-CID.raw",
+        "../../../SpecLance/corpus/thermo/PXD068962_Q_Exactive_UHMR_insource-CID.raw",
     ));
 }
 
 #[test]
 fn waters_smoke() {
     smoke(PathBuf::from(
-        "../../../ProLance/corpus/waters/PXD058812/molecular_mass_P15_01.raw",
+        "../../../SpecLance/corpus/waters/PXD058812/molecular_mass_P15_01.raw",
     ));
 }
 

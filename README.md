@@ -105,7 +105,7 @@ Bug reports and PRs are welcome on any of the five repos. See
 [SECURITY.md](SECURITY.md) for the security policy.
 
 This umbrella ships releases via [`scripts/release-stack.sh`](scripts/release-stack.sh)
-which gates on the downstream [ProLance](https://github.com/Sigilweaver/ProLance)
+which gates on the downstream [SpecLance](https://github.com/Sigilweaver/SpecLance)
 truth-test before tagging.
 
 ## License
