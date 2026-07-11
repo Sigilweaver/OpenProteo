@@ -26,16 +26,16 @@ pub use openmassspec_core::arrow;
 
 /// Re-exports of each vendor parser, gated by feature.
 pub mod vendor {
+    #[cfg(feature = "agilent")]
+    pub use openaraw;
+    #[cfg(feature = "sciex")]
+    pub use opensxraw;
     #[cfg(feature = "thermo")]
     pub use opentfraw;
     #[cfg(feature = "bruker")]
     pub use opentimstdf;
     #[cfg(feature = "waters")]
     pub use openwraw;
-    #[cfg(feature = "agilent")]
-    pub use openaraw;
-    #[cfg(feature = "sciex")]
-    pub use opensxraw;
 }
 
 /// Detected on-disk vendor / format family.

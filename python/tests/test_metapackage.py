@@ -22,7 +22,7 @@ def test_version_string():
 
 
 def test_vendors_tuple():
-    assert openmassspec.VENDORS == ("thermo", "bruker", "waters")
+    assert openmassspec.VENDORS == ("thermo", "bruker", "waters", "agilent", "sciex")
 
 
 def test_detect_thermo_file(tmp_path: Path):
@@ -43,6 +43,27 @@ def test_detect_waters_raw(tmp_path: Path):
     d.mkdir()
     (d / "_HEADER.TXT").write_bytes(b"")
     assert openmassspec.detect(d) == "waters"
+
+
+def test_detect_agilent_d(tmp_path: Path):
+    d = tmp_path / "sample.d"
+    d.mkdir()
+    (d / "AcqData").mkdir()
+    (d / "AcqData" / "MSScan.bin").write_bytes(b"")
+    assert openmassspec.detect(d) == "agilent"
+
+
+def test_detect_sciex_wiff(tmp_path: Path):
+    f = tmp_path / "sample.wiff"
+    f.write_bytes(b"")
+    (tmp_path / "sample.wiff.scan").write_bytes(b"")
+    assert openmassspec.detect(f) == "sciex"
+
+
+def test_detect_wiff_without_scan_is_none(tmp_path: Path):
+    f = tmp_path / "lonely.wiff"
+    f.write_bytes(b"")
+    assert openmassspec.detect(f) is None
 
 
 def test_detect_unknown_returns_none(tmp_path: Path):
@@ -133,6 +154,36 @@ def test_open_run_waters_dispatch(monkeypatch, tmp_path: Path):
 
     assert openmassspec.open_run(d) == "waters-handle"
     assert calls == [("waters", str(d))]
+
+
+def test_open_run_agilent_dispatch(monkeypatch, tmp_path: Path):
+    import sys
+    import types
+
+    d = tmp_path / "sample.d"
+    d.mkdir()
+    (d / "AcqData").mkdir()
+    (d / "AcqData" / "MSScan.bin").write_bytes(b"")
+    calls: list[str] = []
+
+    fake = types.ModuleType("openaraw")
+    fake.RawReader = lambda p: calls.append(("agilent", p)) or "agilent-handle"  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "openaraw", fake)
+
+    assert openmassspec.open_run(d) == "agilent-handle"
+    assert calls == [("agilent", str(d))]
+
+
+def test_open_run_sciex_raises_no_standalone_package(tmp_path: Path):
+    import pytest
+
+    f = tmp_path / "sample.wiff"
+    f.write_bytes(b"")
+    (tmp_path / "sample.wiff.scan").write_bytes(b"")
+    # SCIEX reads through the base binding (to_mzml/iter_spectra), but there
+    # is no standalone Python package for open_run to import.
+    with pytest.raises(ImportError):
+        openmassspec.open_run(f)
 
 
 def test_vendors_is_immutable_tuple():
