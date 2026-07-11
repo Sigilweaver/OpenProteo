@@ -1,0 +1,39 @@
+# Dependency vulnerability audit for OpenMassSpec.
+#
+# Runs cargo-audit against the RustSec Advisory DB on every push/PR that
+# touches the lockfile or manifests, plus a weekly schedule so advisories
+# published after the last dependency change are still caught.
+
+name: Audit
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "**/Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/audit.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "**/Cargo.toml"
+      - "Cargo.lock"
+      - ".github/workflows/audit.yml"
+  schedule:
+    - cron: "0 6 * * 1"
+
+jobs:
+  audit:
+    name: cargo audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@cargo-audit
+      # Advisories tracked in Sigilweaver/OpenMassSpec#4; remove these --ignore flags once
+      # that upgrade lands.
+      - run: >
+          cargo audit
+          --ignore RUSTSEC-2026-0176
+          --ignore RUSTSEC-2026-0177
+          --ignore RUSTSEC-2026-0194
+          --ignore RUSTSEC-2026-0195
