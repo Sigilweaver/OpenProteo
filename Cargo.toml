@@ -1,23 +1,23 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/openproteo-io",
-    "crates/openproteo-io-cli",
-    "crates/openproteo-io-py",
+    "crates/openmassspec-io",
+    "crates/openmassspec-io-cli",
+    "crates/openmassspec-io-py",
 ]
 
 [workspace.package]
-version = "1.3.0"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.87"
 authors = ["Nathan Riley <git@nathanriley.com>"]
 license = "Apache-2.0"
-repository = "https://github.com/Sigilweaver/OpenProteo"
-homepage = "https://sigilweaver.app/openproteo/"
-documentation = "https://sigilweaver.app/openproteo/docs/"
+repository = "https://github.com/Sigilweaver/OpenMassSpec"
+homepage = "https://sigilweaver.app/openmassspec/"
+documentation = "https://sigilweaver.app/openmassspec/docs/"
 
 [workspace.dependencies]
-openproteo-core = "1.0.1"
+openmassspec-core = "1.0.0"
 opentfraw = "1.2.0"
 opentimstdf = "1.0.6"
 openwraw = "1.0.5"

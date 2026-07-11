@@ -1,13 +1,13 @@
-//! Typed error for the `openproteo-io` umbrella crate.
+//! Typed error for the `openmassspec-io` umbrella crate.
 //!
-//! Mirrors the `thiserror`-based pattern used by `openproteo-core` and
+//! Mirrors the `thiserror`-based pattern used by `openmassspec-core` and
 //! the vendor crates. Vendor-specific variants are feature-gated so
 //! that a build excluding a vendor does not carry that vendor's error
 //! type.
 
 use std::path::PathBuf;
 
-/// Errors produced by the umbrella `openproteo-io` API.
+/// Errors produced by the umbrella `openmassspec-io` API.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// The path did not match any supported vendor signature.
@@ -16,16 +16,16 @@ pub enum Error {
 
     /// A vendor format was detected but its feature was not enabled at
     /// build time.
-    #[error("openproteo-io was built without the '{vendor}' feature")]
+    #[error("openmassspec-io was built without the '{vendor}' feature")]
     FeatureDisabled { vendor: &'static str },
 
     /// Wrapping I/O error.
     #[error(transparent)]
     Io(#[from] std::io::Error),
 
-    /// Wrapping `openproteo-core` error.
+    /// Wrapping `openmassspec-core` error.
     #[error(transparent)]
-    Core(#[from] openproteo_core::Error),
+    Core(#[from] openmassspec_core::Error),
 
     /// Thermo (`opentfraw`) error.
     #[cfg(feature = "thermo")]

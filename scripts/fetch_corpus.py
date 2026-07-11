@@ -1,5 +1,5 @@
 """
-Shared corpus fetcher for the OpenProteo stack.
+Shared corpus fetcher for the OpenMassSpec stack.
 
 Generalized port of OpenTFRaw's per-repo fetcher. Reads a vendor-
 agnostic ``sources.json``, resolves file URLs through the PRIDE REST
@@ -42,7 +42,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-USER_AGENT = "OpenProteo-CorpusFetcher/1.0"
+USER_AGENT = "OpenMassSpec-CorpusFetcher/1.0"
 PRIDE_API = "https://www.ebi.ac.uk/pride/ws/archive/v2"
 FTP_BASE = "https://ftp.pride.ebi.ac.uk/pride/data/archive"
 DEFAULT_EXT_PATTERN = r"\.[Rr][Aa][Ww]$"

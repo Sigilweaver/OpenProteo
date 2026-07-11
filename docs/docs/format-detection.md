@@ -1,6 +1,6 @@
 # Format detection
 
-`openproteo_io::detect_format(path)` inspects the filesystem entry at
+`openmassspec_io::detect_format(path)` inspects the filesystem entry at
 `path` and returns a `Detected { path, format }` if and only if the
 signature of a supported vendor matches. The detection rules are:
 

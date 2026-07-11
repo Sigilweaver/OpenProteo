@@ -1,7 +1,7 @@
 cff-version: 1.2.0
-title: "OpenProteo: High-performance Rust + Python readers for mass spectrometry / proteomics raw data"
+title: "OpenMassSpec: High-performance Rust + Python readers for mass spectrometry / proteomics raw data"
 message: >
-  If you use OpenProteo in your research, please cite it using the metadata
+  If you use OpenMassSpec in your research, please cite it using the metadata
   below. Citation is encouraged and appreciated but not legally required.
 type: software
 authors:
@@ -9,19 +9,19 @@ authors:
     given-names: Nathan
     orcid: "https://orcid.org/0009-0004-1579-7312"
     website: "https://github.com/Sigilweaver"
-repository-code: "https://github.com/Sigilweaver/OpenProteo"
+repository-code: "https://github.com/Sigilweaver/OpenMassSpec"
 url: "https://sigilweaver.app"
 abstract: >
-  OpenProteo provides high-performance, pure-Rust readers for mass spectrometry
+  OpenMassSpec provides high-performance, pure-Rust readers for mass spectrometry
   and proteomics raw data formats, with first-class Python bindings built on
   PyO3, including a zero-copy `read_arrow()` API (enabled by default) that
   loads directly into Polars or Pandas via PyArrow. The project covers the
   open mzML format and provides the shared core types and traits used by the
   vendor-specific reader crates (OpenTFRaw, OpenTimsTDF, OpenWRaw).
 license: "Apache-2.0"
-license-url: "https://github.com/Sigilweaver/OpenProteo/blob/main/LICENSE"
-date-released: "2026-05-31"
-version: "1.0.3"
+license-url: "https://github.com/Sigilweaver/OpenMassSpec/blob/main/LICENSE"
+date-released: "2026-07-10"
+version: "1.0.0"
 keywords:
   - mass spectrometry
   - proteomics

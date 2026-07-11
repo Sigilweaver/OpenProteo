@@ -3,7 +3,7 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-    title: 'OpenProteo',
+    title: 'OpenMassSpec',
     tagline: 'Pure-Rust mass spectrometry I/O for Thermo, Bruker, and Waters',
     favicon: 'img/favicon.ico',
 
@@ -17,10 +17,10 @@ const config: Config = {
     themes: ['@docusaurus/theme-mermaid'],
 
     url: 'https://sigilweaver.app',
-    baseUrl: '/openproteo/docs/',
+    baseUrl: '/openmassspec/docs/',
 
     organizationName: 'Sigilweaver',
-    projectName: 'OpenProteo',
+    projectName: 'OpenMassSpec',
 
     onBrokenLinks: 'throw',
 
@@ -36,7 +36,7 @@ const config: Config = {
                 docs: {
                     routeBasePath: '/',
                     sidebarPath: './sidebars.ts',
-                    editUrl: 'https://github.com/Sigilweaver/OpenProteo/tree/main/docs/',
+                    editUrl: 'https://github.com/Sigilweaver/OpenMassSpec/tree/main/docs/',
                 },
                 blog: false,
                 sitemap: {
@@ -53,8 +53,8 @@ const config: Config = {
 
     themeConfig: {
         metadata: [
-            { name: 'keywords', content: 'OpenProteo, mass spectrometry, proteomics, Thermo, Bruker, Waters, mzML, Arrow, Rust, Python' },
-            { name: 'description', content: 'OpenProteo is a pure-Rust mass spectrometry I/O stack for Thermo, Bruker, and Waters acquisitions.' },
+            { name: 'keywords', content: 'OpenMassSpec, mass spectrometry, proteomics, Thermo, Bruker, Waters, mzML, Arrow, Rust, Python' },
+            { name: 'description', content: 'OpenMassSpec is a pure-Rust mass spectrometry I/O stack for Thermo, Bruker, and Waters acquisitions.' },
         ],
         colorMode: {
             defaultMode: 'dark',
@@ -72,7 +72,7 @@ const config: Config = {
             items: [
                 {
                     type: 'dropdown',
-                    label: 'OpenProteo',
+                    label: 'OpenMassSpec',
                     position: 'left',
                     items: [
                         { label: 'OpenTFRaw (Thermo)', href: 'https://sigilweaver.app/opentfraw/docs/' },
@@ -82,11 +82,11 @@ const config: Config = {
                 },
                 {
                     label: 'Core',
-                    href: 'https://docs.rs/openproteo-core',
+                    href: 'https://docs.rs/openmassspec-core',
                     position: 'left',
                 },
                 {
-                    href: 'https://github.com/Sigilweaver/OpenProteo',
+                    href: 'https://github.com/Sigilweaver/OpenMassSpec',
                     label: 'GitHub',
                     position: 'right',
                 },
@@ -98,8 +98,8 @@ const config: Config = {
                 {
                     title: 'Project',
                     items: [
-                        { label: 'GitHub', href: 'https://github.com/Sigilweaver/OpenProteo' },
-                        { label: 'Issues', href: 'https://github.com/Sigilweaver/OpenProteo/issues' },
+                        { label: 'GitHub', href: 'https://github.com/Sigilweaver/OpenMassSpec' },
+                        { label: 'Issues', href: 'https://github.com/Sigilweaver/OpenMassSpec/issues' },
                     ],
                 },
                 {
@@ -118,7 +118,7 @@ const config: Config = {
                     ],
                 },
             ],
-            copyright: `Copyright ${new Date().getFullYear()} Sigilweaver Holdings LLC. OpenProteo is Apache-2.0 licensed. Documentation licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC-BY-SA 4.0</a>.`,
+            copyright: `Copyright ${new Date().getFullYear()} Sigilweaver Holdings LLC. OpenMassSpec is Apache-2.0 licensed. Documentation licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC-BY-SA 4.0</a>.`,
         },
         prism: {
             theme: prismThemes.github,

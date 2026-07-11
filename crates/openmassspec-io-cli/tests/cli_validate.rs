@@ -1,6 +1,6 @@
 //! Integration tests for `vendor2mzml validate`.
 //!
-//! These tests synthesize a tiny mzML on disk using `openproteo-core`'s
+//! These tests synthesize a tiny mzML on disk using `openmassspec-core`'s
 //! own writer, then invoke the compiled `vendor2mzml` binary against it
 //! to exercise the end-to-end CLI path (including the mzdata-based
 //! mzML reader and the conformance harness).
@@ -10,8 +10,8 @@ use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 use std::process::Command;
 
-use openproteo_core::{write_mzml, CvTerm, Polarity, PrecursorInfo, RunMetadata, SpectrumRecord};
-use openproteo_io::VecSource;
+use openmassspec_core::{write_mzml, CvTerm, Polarity, PrecursorInfo, RunMetadata, SpectrumRecord};
+use openmassspec_io::VecSource;
 
 fn bin_path() -> PathBuf {
     // CARGO_BIN_EXE_<name> is set by Cargo for integration tests of the
@@ -25,7 +25,7 @@ fn make_metadata() -> RunMetadata {
         source_file_format: CvTerm::new("MS:1000563", "Thermo RAW format"),
         native_id_format: CvTerm::new("MS:1000768", "Thermo nativeID format"),
         instrument: CvTerm::new("MS:1000031", "instrument model"),
-        software_name: "openproteo-io-cli-test".into(),
+        software_name: "openmassspec-io-cli-test".into(),
         software_version: "0.0.0".into(),
         start_timestamp: None,
         mobility_array_kind: None,
@@ -48,7 +48,7 @@ fn make_record(index: usize, scan: u32, ms_level: u32, rt_sec: f64) -> SpectrumR
                 "controllerType=0 controllerNumber=1 scan={}",
                 scan - 1
             )),
-            activation: Some(openproteo_core::Activation::HCD),
+            activation: Some(openmassspec_core::Activation::HCD),
             analyzer: None,
         })
     } else {
@@ -60,7 +60,7 @@ fn make_record(index: usize, scan: u32, ms_level: u32, rt_sec: f64) -> SpectrumR
         native_id: format!("controllerType=0 controllerNumber=1 scan={scan}"),
         ms_level,
         polarity: Some(Polarity::Positive),
-        scan_mode: Some(openproteo_core::ScanMode::Centroid),
+        scan_mode: Some(openmassspec_core::ScanMode::Centroid),
         analyzer: None,
         filter: None,
         retention_time_sec: rt_sec,

@@ -1,7 +1,7 @@
 [package]
-name = "openproteo-io-py"
+name = "openmassspec-io-py"
 version.workspace = true
-description = "Python bindings (PyO3) for openproteo-io: vendor-neutral mass-spec I/O with mzML conversion and Arrow streaming."
+description = "Python bindings (PyO3) for openmassspec-io: vendor-neutral mass-spec I/O with mzML conversion and Arrow streaming."
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -13,16 +13,16 @@ categories = ["science", "encoding", "api-bindings"]
 publish = false
 
 [lib]
-name = "_openproteo_io"
+name = "_openmassspec_io"
 crate-type = ["cdylib"]
 
 [features]
 default = ["arrow"]
-arrow = ["openproteo-io/arrow", "openproteo-core/arrow", "dep:arrow"]
+arrow = ["openmassspec-io/arrow", "openmassspec-core/arrow", "dep:arrow"]
 
 [dependencies]
-openproteo-core = { workspace = true }
-openproteo-io = { path = "../openproteo-io", features = ["all"] }
+openmassspec-core = { workspace = true }
+openmassspec-io = { path = "../openmassspec-io", features = ["all"] }
 opentfraw = { workspace = true }
 opentimstdf = { workspace = true }
 openwraw = { workspace = true }

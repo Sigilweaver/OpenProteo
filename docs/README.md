@@ -1,7 +1,7 @@
-# openproteo docs
+# openmassspec docs
 
 This directory is the [Docusaurus](https://docusaurus.io) site that
-publishes to <https://sigilweaver.app/openproteo/>.
+publishes to <https://sigilweaver.app/openmassspec/>.
 
 ## Develop
 

@@ -13,15 +13,15 @@ Only the latest published release receives security updates.
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Report privately via [GitHub Security Advisories](https://github.com/Sigilweaver/OpenProteo/security/advisories/new).
+Report privately via [GitHub Security Advisories](https://github.com/Sigilweaver/OpenMassSpec/security/advisories/new).
 
 Include:
 
 - A description of the vulnerability and its potential impact.
 - Steps to reproduce or a proof of concept (a small input file is
   ideal).
-- The affected crate (`openproteo-io`, `openproteo-io-cli`, or
-  `openproteo-io-py`).
+- The affected crate (`openmassspec-io`, `openmassspec-io-cli`, or
+  `openmassspec-io-py`).
 - The OS, Rust toolchain, and crate version you were running.
 
 Expect an initial acknowledgment within 7 days.
@@ -30,13 +30,13 @@ Expect an initial acknowledgment within 7 days.
 
 In scope:
 
-- **Parser correctness on malicious input.** `openproteo-io` dispatches
+- **Parser correctness on malicious input.** `openmassspec-io` dispatches
   to vendor parsers and runs the canonical mzML writer from
-  `openproteo-core`. Crashes (panics, OOB reads, infinite loops),
+  `openmassspec-core`. Crashes (panics, OOB reads, infinite loops),
   arbitrary file writes, or memory corruption triggered by a crafted
   vendor file or mzML input are in scope.
 - **Path-traversal or arbitrary-file-write bugs** in
-  `vendor2mzml` (CLI) and `openproteo-io-py` (Python wheel).
+  `vendor2mzml` (CLI) and `openmassspec-io-py` (Python wheel).
 - **Supply-chain integrity** of published artifacts on crates.io and
   PyPI: tampered manifests, missing provenance, unsigned releases.
 
@@ -49,7 +49,7 @@ Out of scope:
 - Issues that require write access to the parser source tree (this is
   a library, not a sandboxed service).
 
-This repository is the **umbrella** of the OpenProteo stack. Reports
+This repository is the **umbrella** of the OpenMassSpec stack. Reports
 about a specific vendor parser are usually better routed to the
 relevant repo - but the umbrella is a fine entry point and we will
 forward as needed:
@@ -57,7 +57,7 @@ forward as needed:
 - Thermo `.raw`: [OpenTFRaw](https://github.com/Sigilweaver/OpenTFRaw)
 - Bruker `.d/` (timsTOF): [OpenTimsTDF](https://github.com/Sigilweaver/OpenTimsTDF)
 - Waters MassLynx `.raw/`: [OpenWRaw](https://github.com/Sigilweaver/OpenWRaw)
-- Shared core: [openproteo-core](https://github.com/Sigilweaver/OpenProteoCore)
+- Shared core: [openmassspec-core](https://github.com/Sigilweaver/OpenMassSpecCore)
 
 ## Disclosure
 

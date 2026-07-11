@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-07-10
+
+Renamed from OpenProteo / `openproteo-io` / `openproteo`. The vendor
+raw-file readers this stack wraps (Thermo, Bruker, Waters, with Agilent
+and SCIEX joining the suite) are used as much in metabolomics and
+lipidomics as in proteomics, so the umbrella naming moves from
+proteomics-specific to general mass spectrometry. `openmassspec-core`
+(the shared foundation crate) made the same move; see its own
+CHANGELOG for that side of the rename.
+
+No API or behavioral changes from `openproteo-io`/`openproteo` 1.3.0.
+Version reset to 1.0.0 to reflect that these are new package identities
+on crates.io and PyPI (the old `openproteo-io`/`openproteo` names stay
+published and frozen at 1.3.0, they are not superseded in place). See
+[OpenProteo's CHANGELOG](https://github.com/Sigilweaver/OpenProteo/blob/main/CHANGELOG.md)
+for pre-rename history.
+
+### Changed
+
+- Repo renamed OpenProteo -> OpenMassSpec.
+- Crates renamed `openproteo-io` -> `openmassspec-io`,
+  `openproteo-io-cli` -> `openmassspec-io-cli`,
+  `openproteo-io-py` -> `openmassspec-io-py`.
+- PyPI packages renamed `openproteo-io` -> `openmassspec-io` (bindings),
+  `openproteo` -> `openmassspec` (facade).
+- Dependency on the shared core crate updated to `openmassspec-core` 1.0.0.
+
 ## [1.3.0] - 2026-07-06
 
 ### Added

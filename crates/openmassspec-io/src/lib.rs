@@ -1,4 +1,4 @@
-//! `openproteo-io` is the umbrella crate that ties together the open
+//! `openmassspec-io` is the umbrella crate that ties together the open
 //! Rust mass-spec parsers (`opentfraw`, `opentimstdf`, `openwraw`)
 //! behind a uniform vendor-detection + mzML-conversion API.
 //!
@@ -18,10 +18,10 @@ use std::path::{Path, PathBuf};
 mod error;
 pub use error::{Error, Result};
 
-pub use openproteo_core as core;
+pub use openmassspec_core as core;
 
 #[cfg(feature = "arrow")]
-pub use openproteo_core::arrow;
+pub use openmassspec_core::arrow;
 
 /// Re-exports of each vendor parser, gated by feature.
 pub mod vendor {
@@ -232,11 +232,11 @@ fn thermo_convert(path: &Path, out: &mut impl std::io::Write, indexed: bool) -> 
 pub fn collect(
     detected: Detected,
 ) -> Result<(
-    Vec<openproteo_core::SpectrumRecord>,
-    openproteo_core::RunMetadata,
+    Vec<openmassspec_core::SpectrumRecord>,
+    openmassspec_core::RunMetadata,
 )> {
     #[allow(unused_imports)]
-    use openproteo_core::SpectrumSource;
+    use openmassspec_core::SpectrumSource;
     match detected.format {
         VendorFormat::ThermoRaw => {
             #[cfg(feature = "thermo")]
@@ -284,31 +284,31 @@ pub fn collect(
     }
 }
 
-/// A trivial in-memory [`openproteo_core::SpectrumSource`] backed by a
-/// `Vec<SpectrumRecord>` + a [`openproteo_core::RunMetadata`]. Hand it
-/// to `openproteo_core::write_mzml` when you already have the records
+/// A trivial in-memory [`openmassspec_core::SpectrumSource`] backed by a
+/// `Vec<SpectrumRecord>` + a [`openmassspec_core::RunMetadata`]. Hand it
+/// to `openmassspec_core::write_mzml` when you already have the records
 /// in hand and just want to emit mzML.
 pub struct VecSource {
-    pub metadata: openproteo_core::RunMetadata,
-    pub records: Vec<openproteo_core::SpectrumRecord>,
+    pub metadata: openmassspec_core::RunMetadata,
+    pub records: Vec<openmassspec_core::SpectrumRecord>,
 }
 
 impl VecSource {
     pub fn new(
-        metadata: openproteo_core::RunMetadata,
-        records: Vec<openproteo_core::SpectrumRecord>,
+        metadata: openmassspec_core::RunMetadata,
+        records: Vec<openmassspec_core::SpectrumRecord>,
     ) -> Self {
         Self { metadata, records }
     }
 }
 
-impl openproteo_core::SpectrumSource for VecSource {
-    fn run_metadata(&self) -> openproteo_core::RunMetadata {
+impl openmassspec_core::SpectrumSource for VecSource {
+    fn run_metadata(&self) -> openmassspec_core::RunMetadata {
         self.metadata.clone()
     }
     fn iter_spectra<'s>(
         &'s mut self,
-    ) -> Box<dyn Iterator<Item = openproteo_core::SpectrumRecord> + 's> {
+    ) -> Box<dyn Iterator<Item = openmassspec_core::SpectrumRecord> + 's> {
         Box::new(self.records.drain(..))
     }
     fn spectrum_count_hint(&self) -> Option<usize> {
@@ -387,7 +387,7 @@ mod tests {
         let e = Error::FeatureDisabled { vendor: "thermo" };
         assert_eq!(
             e.to_string(),
-            "openproteo-io was built without the 'thermo' feature"
+            "openmassspec-io was built without the 'thermo' feature"
         );
         let e = Error::UnsupportedFormat(PathBuf::from("/tmp/nope"));
         assert!(matches!(e, Error::UnsupportedFormat(_)));

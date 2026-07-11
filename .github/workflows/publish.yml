@@ -1,19 +1,19 @@
-# Publish the OpenProteo stack to crates.io and PyPI on tag push.
+# Publish the OpenMassSpec stack to crates.io and PyPI on tag push.
 #
-# - `openproteo-io` (Rust library) -> crates.io
-# - `openproteo-io` (Python wheel via maturin matrix) -> PyPI
-# - `openproteo` (pure-Python metapackage) -> PyPI
+# - `openmassspec-io` (Rust library) -> crates.io
+# - `openmassspec-io` (Python wheel via maturin matrix) -> PyPI
+# - `openmassspec` (pure-Python metapackage) -> PyPI
 #
 # Wheel and sdist uploads use PyPI trusted publishing (OIDC); no PyPI
-# tokens live in this repo. The `openproteo` and `openproteo-io`
+# tokens live in this repo. The `openmassspec` and `openmassspec-io`
 # trusted publishers must be configured on PyPI to allow uploads from
-# this workflow (Sigilweaver/OpenProteo, workflow `publish.yml`).
+# this workflow (Sigilweaver/OpenMassSpec, workflow `publish.yml`).
 #
-# The CLI (`openproteo-io-cli` / `vendor2mzml`) ships only as binary
+# The CLI (`openmassspec-io-cli` / `vendor2mzml`) ships only as binary
 # release artifacts and is intentionally not on crates.io or PyPI.
 #
 # Requires repository secret CARGO_REGISTRY_TOKEN with publish access
-# to the `openproteo-io` crate.
+# to the `openmassspec-io` crate.
 
 name: Publish
 
@@ -35,7 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo publish -p openproteo-io
+      - run: cargo publish -p openmassspec-io
         continue-on-error: true
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
@@ -65,7 +65,7 @@ jobs:
       - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --find-interpreter --manifest-path crates/openproteo-io-py/Cargo.toml
+          args: --release --out dist --find-interpreter --manifest-path crates/openmassspec-io-py/Cargo.toml
           sccache: "true"
           manylinux: auto
       - uses: actions/upload-artifact@v4
@@ -74,7 +74,7 @@ jobs:
           path: dist
 
   build-sdist:
-    name: Build openproteo-io sdist
+    name: Build openmassspec-io sdist
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -84,14 +84,14 @@ jobs:
       - uses: PyO3/maturin-action@v1
         with:
           command: sdist
-          args: --out dist --manifest-path crates/openproteo-io-py/Cargo.toml
+          args: --out dist --manifest-path crates/openmassspec-io-py/Cargo.toml
       - uses: actions/upload-artifact@v4
         with:
-          name: sdist-openproteo-io
+          name: sdist-openmassspec-io
           path: dist
 
   build-metapackage:
-    name: Build openproteo metapackage (sdist + wheel)
+    name: Build openmassspec metapackage (sdist + wheel)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -102,16 +102,16 @@ jobs:
       - run: python -m build --sdist --wheel --outdir dist python/
       - uses: actions/upload-artifact@v4
         with:
-          name: dist-openproteo
+          name: dist-openmassspec
           path: dist
 
-  publish-openproteo-io:
-    name: Publish openproteo-io to PyPI
+  publish-openmassspec-io:
+    name: Publish openmassspec-io to PyPI
     needs: [build-wheels, build-sdist]
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/openproteo-io
+      url: https://pypi.org/p/openmassspec-io
     permissions:
       id-token: write
     steps:
@@ -122,26 +122,26 @@ jobs:
           merge-multiple: true
       - uses: actions/download-artifact@v4
         with:
-          name: sdist-openproteo-io
+          name: sdist-openmassspec-io
           path: dist
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist
           skip-existing: true
 
-  publish-openproteo:
-    name: Publish openproteo metapackage to PyPI
+  publish-openmassspec:
+    name: Publish openmassspec metapackage to PyPI
     needs: [build-metapackage]
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/openproteo
+      url: https://pypi.org/p/openmassspec
     permissions:
       id-token: write
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: dist-openproteo
+          name: dist-openmassspec
           path: dist
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:

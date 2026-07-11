@@ -1,10 +1,10 @@
-"""Python bindings for openproteo-io.
+"""Python bindings for openmassspec-io.
 
 Detect a vendor acquisition (Thermo / Bruker / Waters), convert it to mzML,
 or stream spectra as zero-copy NumPy arrays / pyarrow record batches.
 """
 
-from ._openproteo_io import (
+from ._openmassspec_io import (
     Spectrum,
     __version__,
     detect,
@@ -13,7 +13,7 @@ from ._openproteo_io import (
 )
 
 try:
-    from ._openproteo_io import read_arrow  # noqa: F401
+    from ._openmassspec_io import read_arrow  # noqa: F401
 
     _HAS_ARROW = True
 except ImportError:  # pragma: no cover - built without arrow feature
@@ -33,7 +33,7 @@ if _HAS_ARROW:
     def read_polars(path, batch_size=1024):
         """Read a vendor acquisition file into a Polars DataFrame via zero-copy Arrow.
 
-        Requires the `polars` extra (`pip install openproteo-io[polars]`).
+        Requires the `polars` extra (`pip install openmassspec-io[polars]`).
         """
         import polars as pl
 

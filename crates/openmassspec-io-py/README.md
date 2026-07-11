@@ -1,12 +1,12 @@
-# openproteo-io (Python)
+# openmassspec-io (Python)
 
-Python bindings for the [`openproteo-io`](https://github.com/Sigilweaver/OpenProteo)
+Python bindings for the [`openmassspec-io`](https://github.com/Sigilweaver/OpenMassSpec)
 Rust crate. Detect a Thermo / Bruker / Waters acquisition on disk, convert
 it to mzML, or stream spectra as zero-copy NumPy arrays / pyarrow record
 batches.
 
 ```python
-import openproteo_io as opio
+import openmassspec_io as opio
 
 fmt = opio.detect("sample.raw")        # -> "thermo" | "bruker" | "waters" | None
 opio.to_mzml("sample.raw", "sample.mzML", indexed=True)

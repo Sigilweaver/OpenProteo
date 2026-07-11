@@ -1,6 +1,6 @@
-# openproteo
+# openmassspec
 
-`openproteo` is a thin Python metapackage that bundles the OpenProteo vendor reader stack:
+`openmassspec` is a thin Python metapackage that bundles the OpenMassSpec vendor reader stack:
 
 | Vendor | Format         | Underlying package |
 |--------|----------------|--------------------|
@@ -13,24 +13,24 @@
 Install just what you need:
 
 ```bash
-pip install openproteo[thermo]
-pip install openproteo[bruker]
-pip install openproteo[waters]
+pip install openmassspec[thermo]
+pip install openmassspec[bruker]
+pip install openmassspec[waters]
 ```
 
 Or install every supported vendor reader:
 
 ```bash
-pip install openproteo[all]
+pip install openmassspec[all]
 ```
 
 ## Usage
 
 ```python
-import openproteo
+import openmassspec
 
-kind = openproteo.detect("/data/sample.raw")     # "thermo" | "bruker" | "waters" | None
-run  = openproteo.open_run("/data/sample.raw")    # vendor-specific reader object
+kind = openmassspec.detect("/data/sample.raw")     # "thermo" | "bruker" | "waters" | None
+run  = openmassspec.open_run("/data/sample.raw")    # vendor-specific reader object
 ```
 
 `open_run` raises `ImportError` if the matching vendor extra is not installed and

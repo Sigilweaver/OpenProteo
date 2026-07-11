@@ -1,10 +1,10 @@
-# Contributing to OpenProteo
+# Contributing to OpenMassSpec
 
-Thanks for your interest in OpenProteo. This is a small, single-maintainer
+Thanks for your interest in OpenMassSpec. This is a small, single-maintainer
 project that ships [Apache-2.0](LICENSE) Rust (and Python where
 applicable) tooling for the open mass-spec stack.
 
-Crates / packages in this repo: openproteo-io, openproteo-io-cli, openproteo-io-py.
+Crates / packages in this repo: openmassspec-io, openmassspec-io-cli, openmassspec-io-py.
 
 ## Before you open a PR
 

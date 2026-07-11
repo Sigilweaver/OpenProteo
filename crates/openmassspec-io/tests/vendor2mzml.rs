@@ -12,13 +12,13 @@ fn smoke(input: PathBuf) {
         eprintln!("skipping {}: corpus not present", input.display());
         return;
     }
-    let det = openproteo_io::detect_format(&input).expect("detect");
+    let det = openmassspec_io::detect_format(&input).expect("detect");
     let out = std::env::temp_dir().join(format!(
         "msio-smoke-{}-{}.mzML",
         det.format.name(),
         std::process::id()
     ));
-    openproteo_io::convert_to_mzml(det, &out, false).expect("convert");
+    openmassspec_io::convert_to_mzml(det, &out, false).expect("convert");
     let bytes = fs::read(&out).expect("read");
     assert!(
         bytes.len() > 4096,

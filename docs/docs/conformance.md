@@ -1,6 +1,6 @@
 # Conformance contract
 
-`openproteo-core` ships a small conformance harness that codifies the
+`openmassspec-core` ships a small conformance harness that codifies the
 invariants every vendor source is expected to satisfy. The harness is
 the same set of checks the `vendor2mzml convert --validate` flag
 applies before writing mzML.
@@ -28,7 +28,7 @@ every record:
 ## API
 
 ```rust,no_run
-use openproteo_core::conformance::{assert_iter_invariants, assert_source_invariants};
+use openmassspec_core::conformance::{assert_iter_invariants, assert_source_invariants};
 ```
 
 - `assert_source_invariants(&mut src)` consumes the source's
@@ -47,7 +47,7 @@ a human-readable summary; the `Display` impl is what
 
 ## Stability guarantee
 
-The invariants listed here are part of the OpenProteo 0.x contract.
+The invariants listed here are part of the OpenMassSpec 0.x contract.
 Adding new invariants is a semver-minor change (a previously-accepted
 file may start failing); relaxing an invariant is a semver-major
 change. The exact wording of `Display` is **not** part of the API.

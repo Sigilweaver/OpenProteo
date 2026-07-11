@@ -1,4 +1,4 @@
-//! Minimal mzML -> openproteo-core `SpectrumRecord` adapter, used by
+//! Minimal mzML -> openmassspec-core `SpectrumRecord` adapter, used by
 //! `vendor2mzml validate` so the conformance harness can be run against
 //! arbitrary mzML files (including indexed mzML and gzipped mzML).
 //!
@@ -13,7 +13,7 @@ use mzdata::prelude::*;
 use mzdata::spectrum::{RawSpectrum, ScanPolarity};
 use mzdata::MzMLReader;
 
-use openproteo_core::{Polarity, PrecursorInfo, SpectrumRecord};
+use openmassspec_core::{Polarity, PrecursorInfo, SpectrumRecord};
 
 /// Returns true if `path` has an extension suggesting an mzML file.
 /// Accepts `.mzml`, `.mzML`, and `.mzml.gz` (any case).
@@ -26,9 +26,9 @@ pub fn looks_like_mzml(path: &Path) -> bool {
 }
 
 /// Decode an mzML (or mzML.gz) file into a vector of `SpectrumRecord`s.
-pub fn read_mzml_records(path: &Path) -> openproteo_io::Result<Vec<SpectrumRecord>> {
+pub fn read_mzml_records(path: &Path) -> openmassspec_io::Result<Vec<SpectrumRecord>> {
     let reader =
-        MzMLReader::open_path(path).map_err(|e| openproteo_io::Error::Mzml(e.to_string()))?;
+        MzMLReader::open_path(path).map_err(|e| openmassspec_io::Error::Mzml(e.to_string()))?;
     let mut out = Vec::new();
     for (i, spectrum) in reader.enumerate() {
         let raw: RawSpectrum = spectrum.into();

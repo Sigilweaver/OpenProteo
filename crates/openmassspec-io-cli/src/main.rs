@@ -1,6 +1,6 @@
 //! `vendor2mzml`: convert Thermo / Bruker / Waters acquisitions to mzML,
 //! print a one-pass summary of one, or validate a vendor or mzML input
-//! against the openproteo-core conformance harness.
+//! against the openmassspec-core conformance harness.
 
 mod mzml_reader;
 
@@ -14,9 +14,9 @@ use std::time::Instant;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use flate2::write::GzEncoder;
 use flate2::Compression;
-use openproteo_core::conformance::assert_iter_invariants;
-use openproteo_core::SpectrumRecord;
-use openproteo_io::{collect, convert_to_mzml_writer, detect_format, Detected};
+use openmassspec_core::conformance::assert_iter_invariants;
+use openmassspec_core::SpectrumRecord;
+use openmassspec_io::{collect, convert_to_mzml_writer, detect_format, Detected};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -36,7 +36,7 @@ enum Cmd {
     Convert(ConvertArgs),
     /// Print a one-pass summary of a vendor acquisition without writing mzML.
     Info(InfoArgs),
-    /// Run the openproteo-core conformance harness against a vendor
+    /// Run the openmassspec-core conformance harness against a vendor
     /// acquisition or an mzML file. Exits 0 on pass, 2 on unsupported
     /// input, 3 on conformance failure.
     Validate(ValidateArgs),
@@ -83,12 +83,12 @@ enum ProfileFormat {
     Text,
 }
 
-const LONG_VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), "\n  openproteo-core ",);
+const LONG_VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), "\n  openmassspec-core ",);
 
 fn long_version_str() -> &'static str {
     use std::sync::OnceLock;
     static S: OnceLock<String> = OnceLock::new();
-    S.get_or_init(|| format!("{LONG_VERSION}{}", openproteo_core::VERSION))
+    S.get_or_init(|| format!("{LONG_VERSION}{}", openmassspec_core::VERSION))
         .as_str()
 }
 
@@ -315,7 +315,7 @@ impl Summary {
 
 fn summarize(
     detected: &Detected,
-    meta: &openproteo_core::RunMetadata,
+    meta: &openmassspec_core::RunMetadata,
     records: &[SpectrumRecord],
     decode_elapsed_sec: f64,
 ) -> Summary {
@@ -326,8 +326,8 @@ fn summarize(
     for r in records {
         *ms_levels.entry(r.ms_level).or_insert(0) += 1;
         let key = match r.polarity {
-            Some(openproteo_core::Polarity::Positive) => "pos",
-            Some(openproteo_core::Polarity::Negative) => "neg",
+            Some(openmassspec_core::Polarity::Positive) => "pos",
+            Some(openmassspec_core::Polarity::Negative) => "neg",
             None => "unk",
         };
         *polarity_counts.entry(key.to_string()).or_insert(0) += 1;
@@ -436,8 +436,8 @@ fn run_validate(args: ValidateArgs) -> ExitCode {
     }
 }
 
-fn conformance_variant(e: &openproteo_core::conformance::ConformanceError) -> &'static str {
-    use openproteo_core::conformance::ConformanceError as C;
+fn conformance_variant(e: &openmassspec_core::conformance::ConformanceError) -> &'static str {
+    use openmassspec_core::conformance::ConformanceError as C;
     match e {
         C::PeakArrayLengthMismatch { .. } => "PeakArrayLengthMismatch",
         C::MobilityArrayLengthMismatch { .. } => "MobilityArrayLengthMismatch",

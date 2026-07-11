@@ -1,4 +1,4 @@
-//! PyO3 bindings for `openproteo-io`.
+//! PyO3 bindings for `openmassspec-io`.
 //!
 //! Exposes a small, vendor-neutral surface:
 //!
@@ -19,8 +19,8 @@
 use std::path::{Path, PathBuf};
 
 use numpy::PyArray1;
-use openproteo_core::{Activation, Polarity, PrecursorInfo, SpectrumRecord, SpectrumSource};
-use openproteo_io::{detect_format, Detected, VendorFormat};
+use openmassspec_core::{Activation, Polarity, PrecursorInfo, SpectrumRecord, SpectrumSource};
+use openmassspec_io::{detect_format, Detected, VendorFormat};
 use pyo3::exceptions::{PyFileNotFoundError, PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
@@ -50,7 +50,7 @@ fn detected_or_err(path: &Path) -> PyResult<Detected> {
 /// variant is on the roadmap.
 fn collect_records(
     detected: &Detected,
-) -> openproteo_io::Result<(Vec<SpectrumRecord>, openproteo_core::RunMetadata)> {
+) -> openmassspec_io::Result<(Vec<SpectrumRecord>, openmassspec_core::RunMetadata)> {
     match detected.format {
         VendorFormat::ThermoRaw => collect_thermo(&detected.path),
         VendorFormat::BrukerTdf => {
@@ -70,7 +70,7 @@ fn collect_records(
 
 fn collect_thermo(
     path: &Path,
-) -> openproteo_io::Result<(Vec<SpectrumRecord>, openproteo_core::RunMetadata)> {
+) -> openmassspec_io::Result<(Vec<SpectrumRecord>, openmassspec_core::RunMetadata)> {
     use std::fs::File;
     use std::io::BufReader;
     let raw = opentfraw::RawFileReader::open_path(path)?;
@@ -117,7 +117,7 @@ fn activation_str(a: Activation) -> &'static str {
 // ---------------------------------------------------------------------
 
 /// One decoded spectrum, exposed to Python with NumPy-backed peak arrays.
-#[pyclass(module = "openproteo_io._openproteo_io")]
+#[pyclass(module = "openmassspec_io._openmassspec_io")]
 pub struct Spectrum {
     rec: Option<SpectrumRecord>,
 }
@@ -168,8 +168,8 @@ impl Spectrum {
     fn scan_mode(&self) -> PyResult<Option<&'static str>> {
         self.rec_ref().map(|r| {
             r.scan_mode.map(|m| match m {
-                openproteo_core::ScanMode::Centroid => "centroid",
-                openproteo_core::ScanMode::Profile => "profile",
+                openmassspec_core::ScanMode::Centroid => "centroid",
+                openmassspec_core::ScanMode::Profile => "profile",
             })
         })
     }
@@ -177,12 +177,12 @@ impl Spectrum {
     fn analyzer(&self) -> PyResult<Option<&'static str>> {
         self.rec_ref().map(|r| {
             r.analyzer.map(|a| match a {
-                openproteo_core::Analyzer::ITMS => "itms",
-                openproteo_core::Analyzer::TQMS => "tqms",
-                openproteo_core::Analyzer::SQMS => "sqms",
-                openproteo_core::Analyzer::TOFMS => "tofms",
-                openproteo_core::Analyzer::FTMS => "ftms",
-                openproteo_core::Analyzer::Sector => "sector",
+                openmassspec_core::Analyzer::ITMS => "itms",
+                openmassspec_core::Analyzer::TQMS => "tqms",
+                openmassspec_core::Analyzer::SQMS => "sqms",
+                openmassspec_core::Analyzer::TOFMS => "tofms",
+                openmassspec_core::Analyzer::FTMS => "ftms",
+                openmassspec_core::Analyzer::Sector => "sector",
             })
         })
     }
@@ -283,9 +283,9 @@ fn precursor_to_dict<'py>(py: Python<'py>, p: &PrecursorInfo) -> PyResult<Bound<
 // ---------------------------------------------------------------------
 
 /// Run-level metadata for a vendor acquisition.
-#[pyclass(module = "openproteo_io._openproteo_io")]
+#[pyclass(module = "openmassspec_io._openmassspec_io")]
 struct RunInfo {
-    meta: openproteo_core::RunMetadata,
+    meta: openmassspec_core::RunMetadata,
 }
 
 #[pymethods]
@@ -335,7 +335,7 @@ impl RunInfo {
 // SpectrumIter
 // ---------------------------------------------------------------------
 
-#[pyclass(module = "openproteo_io._openproteo_io")]
+#[pyclass(module = "openmassspec_io._openmassspec_io")]
 struct SpectrumIter {
     records: std::vec::IntoIter<SpectrumRecord>,
 }
@@ -366,7 +366,7 @@ fn detect(path: PathBuf) -> Option<&'static str> {
 #[pyo3(signature = (input, output, *, indexed = true))]
 fn to_mzml(input: PathBuf, output: PathBuf, indexed: bool) -> PyResult<()> {
     let detected = detected_or_err(&input)?;
-    openproteo_io::convert_to_mzml(detected, &output, indexed).map_err(map_err)
+    openmassspec_io::convert_to_mzml(detected, &output, indexed).map_err(map_err)
 }
 
 /// Return run-level metadata for a vendor acquisition without iterating spectra.
@@ -399,7 +399,7 @@ mod arrow_bridge {
     use super::*;
     use arrow::pyarrow::ToPyArrow;
     use arrow::record_batch::RecordBatch;
-    use openproteo_core::arrow::SpectrumBatchBuilder;
+    use openmassspec_core::arrow::SpectrumBatchBuilder;
 
     /// Build a `pyarrow.RecordBatchReader` over every spectrum in the
     /// acquisition, batched at `batch_size` rows (default 1024).
@@ -421,7 +421,7 @@ mod arrow_bridge {
             .map_err(map_err)?;
 
         // Hand the batches to pyarrow as a RecordBatchReader.
-        let schema = openproteo_core::arrow::spectrum_record_schema();
+        let schema = openmassspec_core::arrow::spectrum_record_schema();
         let pa = py.import("pyarrow")?;
         let py_schema = schema.to_pyarrow(py)?;
         let py_batches: Vec<Bound<'py, PyAny>> = batches
@@ -435,7 +435,7 @@ mod arrow_bridge {
     fn build_batches(
         records: Vec<SpectrumRecord>,
         batch_size: usize,
-        mobility_kind: Option<openproteo_core::MobilityArrayKind>,
+        mobility_kind: Option<openmassspec_core::MobilityArrayKind>,
     ) -> Result<Vec<RecordBatch>, ::arrow::error::ArrowError> {
         let mut out = Vec::new();
         let mut builder = SpectrumBatchBuilder::new(mobility_kind);
@@ -461,7 +461,7 @@ mod arrow_bridge {
 // ---------------------------------------------------------------------
 
 #[pymodule]
-fn _openproteo_io(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn _openmassspec_io(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_class::<Spectrum>()?;
     m.add_class::<SpectrumIter>()?;

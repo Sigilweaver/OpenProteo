@@ -31,7 +31,7 @@ vendor2mzml validate --json sample.d
 `validate` accepts any input `convert` accepts (Thermo `.raw`, Bruker
 `.d`, Waters `.raw`) plus pre-existing mzML files (`.mzML`, `.mzML.gz`,
 read via `mzdata`). It runs the conformance harness from
-`openproteo-core`:
+`openmassspec-core`:
 
 - monotonic spectrum indices,
 - non-negative, non-decreasing retention times,

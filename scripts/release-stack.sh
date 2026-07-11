@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# release-stack.sh - coordinated stack release helper for OpenProteo.
+# release-stack.sh - coordinated stack release helper for OpenMassSpec.
 #
 # Reads pinned versions across the five-repo stack (this repo +
-# OpenProteoCore, OpenTFRaw, OpenTimsTDF, OpenWRaw), emits a release-notes
+# OpenMassSpecCore, OpenTFRaw, OpenTimsTDF, OpenWRaw), emits a release-notes
 # draft aggregated from each repo's CHANGELOG.md, and optionally creates
 # and pushes an annotated umbrella SemVer tag on this repo.
 #
@@ -14,7 +14,7 @@
 #
 # Flags:
 #   --name <vX.Y.Z>     Umbrella tag name (default: read from
-#                       crates/openproteo-io-cli/Cargo.toml as v<version>).
+#                       crates/openmassspec-io-cli/Cargo.toml as v<version>).
 #   --tag               Create an annotated tag on HEAD of this repo.
 #   --push              Push the created tag to origin (implies --tag).
 #   --apply             Required for any mutating action. Without it,
@@ -36,14 +36,14 @@
 #   4 SpecLance truth-test gate failed (under --gate-speclance --apply)
 set -euo pipefail
 
-# Locations - this script lives in OpenProteo/scripts/.
+# Locations - this script lives in OpenMassSpec/scripts/.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 UMBRELLA_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 PROJECTS_DIR="$(cd "$UMBRELLA_DIR/.." && pwd)"
 
 REPOS=(
-    "OpenProteo"
-    "OpenProteoCore"
+    "OpenMassSpec"
+    "OpenMassSpecCore"
     "OpenTFRaw"
     "OpenTimsTDF"
     "OpenWRaw"
@@ -51,15 +51,15 @@ REPOS=(
 
 # Pretty names + version-file locations for each repo.
 declare -A VERSION_FILE
-VERSION_FILE[OpenProteo]="Cargo.toml"
-VERSION_FILE[OpenProteoCore]="Cargo.toml"
+VERSION_FILE[OpenMassSpec]="Cargo.toml"
+VERSION_FILE[OpenMassSpecCore]="Cargo.toml"
 VERSION_FILE[OpenTFRaw]="Cargo.toml"
 VERSION_FILE[OpenTimsTDF]="Cargo.toml"
 VERSION_FILE[OpenWRaw]="Cargo.toml"
 
 declare -A DISPLAY_NAME
-DISPLAY_NAME[OpenProteo]="OpenProteo (umbrella)"
-DISPLAY_NAME[OpenProteoCore]="openproteo-core"
+DISPLAY_NAME[OpenMassSpec]="OpenMassSpec (umbrella)"
+DISPLAY_NAME[OpenMassSpecCore]="openmassspec-core"
 DISPLAY_NAME[OpenTFRaw]="opentfraw"
 DISPLAY_NAME[OpenTimsTDF]="opentimstdf"
 DISPLAY_NAME[OpenWRaw]="openwraw"
@@ -127,7 +127,7 @@ done
 
 # Resolve umbrella tag name.
 if [ -z "$TAG_NAME" ]; then
-    TAG_NAME="v${VERSIONS[OpenProteo]}"
+    TAG_NAME="v${VERSIONS[OpenMassSpec]}"
 fi
 
 # Emit pin table to stdout (and optionally STACK.md).
@@ -161,8 +161,8 @@ extract_changelog() {
 }
 
 emit_release_notes() {
-    printf '# OpenProteo stack release %s\n\n' "$TAG_NAME"
-    printf 'Coordinated snapshot of the OpenProteo stack.\n\n'
+    printf '# OpenMassSpec stack release %s\n\n' "$TAG_NAME"
+    printf 'Coordinated snapshot of the OpenMassSpec stack.\n\n'
     emit_pin_table
     printf '\n## Per-repo changes\n\n'
     for repo in "${REPOS[@]}"; do
@@ -195,8 +195,8 @@ if [ "$WRITE_STACK_MD" -eq 1 ]; then
     target="$UMBRELLA_DIR/STACK.md"
     if [ "$DO_APPLY" -eq 1 ]; then
         {
-            printf '# OpenProteo stack snapshot\n\n'
-            printf 'Current pinned versions across the OpenProteo stack.\n'
+            printf '# OpenMassSpec stack snapshot\n\n'
+            printf 'Current pinned versions across the OpenMassSpec stack.\n'
             printf 'Regenerate with `scripts/release-stack.sh '
             printf -- '--write-stack-md --apply`.\n\n'
             emit_pin_table
@@ -228,7 +228,7 @@ fi
 # Optionally create / push the umbrella tag.
 if [ "$DO_TAG" -eq 1 ]; then
     if [ "$DO_APPLY" -ne 1 ]; then
-        echo "[dry-run] would create annotated tag $TAG_NAME on OpenProteo" >&2
+        echo "[dry-run] would create annotated tag $TAG_NAME on OpenMassSpec" >&2
         if [ "$DO_PUSH" -eq 1 ]; then
             echo "[dry-run] would push $TAG_NAME to origin" >&2
         fi

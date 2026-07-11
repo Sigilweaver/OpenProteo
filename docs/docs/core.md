@@ -1,11 +1,11 @@
-# `openproteo-core`
+# `openmassspec-core`
 
-`openproteo-core` is the shared Rust foundation every vendor parser in
+`openmassspec-core` is the shared Rust foundation every vendor parser in
 the stack builds on. It defines the vendor-neutral records, the
 `SpectrumSource` trait, the canonical mzML 1.1.0 writer, an optional
 Apache Arrow bridge, and the cross-vendor conformance harness.
 
-- Crate: [Sigilweaver/OpenProteoCore](https://github.com/Sigilweaver/OpenProteoCore)
+- Crate: [Sigilweaver/OpenMassSpecCore](https://github.com/Sigilweaver/OpenMassSpecCore)
 - License: Apache-2.0
 - MSRV: 1.75
 - `#![forbid(unsafe_code)]`
@@ -14,10 +14,10 @@ Apache Arrow bridge, and the cross-vendor conformance harness.
 
 ```toml
 [dependencies]
-openproteo-core = "0.1"
+openmassspec-core = "0.1"
 
 # Optional: zero-copy Arrow RecordBatch builder.
-openproteo-core = { version = "0.1", features = ["arrow"] }
+openmassspec-core = { version = "0.1", features = ["arrow"] }
 ```
 
 ## The `SpectrumSource` trait
@@ -25,11 +25,11 @@ openproteo-core = { version = "0.1", features = ["arrow"] }
 Every vendor parser (`opentfraw`, `opentimstdf`, `openwraw`) implements
 this trait. Anything downstream of a parser - the canonical mzML
 writer, the Arrow batch builder, the conformance harness, the
-`openproteo-io` umbrella, the `vendor2mzml` CLI - operates against
+`openmassspec-io` umbrella, the `vendor2mzml` CLI - operates against
 `&mut dyn SpectrumSource`.
 
 ```rust
-use openproteo_core::{RunMetadata, SpectrumRecord, ChromatogramRecord};
+use openmassspec_core::{RunMetadata, SpectrumRecord, ChromatogramRecord};
 
 pub trait SpectrumSource {
     fn run_metadata(&self) -> RunMetadata;
@@ -69,7 +69,7 @@ the rest of the stack can hold `&mut dyn SpectrumSource`.
 ## mzML writer
 
 ```rust
-use openproteo_core::{write_indexed_mzml, SpectrumSource};
+use openmassspec_core::{write_indexed_mzml, SpectrumSource};
 
 fn export<S: SpectrumSource>(mut src: S, path: &std::path::Path)
     -> std::io::Result<()>
@@ -93,11 +93,11 @@ satisfy, surfaced as structured `ConformanceError` variants
 `EmptySpectrum`, ...).
 
 ```rust
-use openproteo_core::conformance::assert_iter_invariants;
+use openmassspec_core::conformance::assert_iter_invariants;
 
 let count = assert_iter_invariants(records)?;
 println!("validated {count} spectra");
-# Ok::<(), openproteo_core::conformance::ConformanceError>(())
+# Ok::<(), openmassspec_core::conformance::ConformanceError>(())
 ```
 
 The [`vendor2mzml validate`](./quickstart-cli.md#validate) subcommand
@@ -108,7 +108,7 @@ runs this harness on any vendor input or pre-existing mzML.
 ```rust
 # #[cfg(feature = "arrow")]
 # fn _doc() -> arrow_array::RecordBatch {
-use openproteo_core::arrow::SpectrumBatchBuilder;
+use openmassspec_core::arrow::SpectrumBatchBuilder;
 
 let mut b = SpectrumBatchBuilder::new();
 for s in /* SpectrumSource iter_spectra */ std::iter::empty() {
@@ -131,7 +131,7 @@ The canonical schema is documented in
 ## Where it sits in the stack
 
 ```text
-              openproteo-core   (this crate)
+              openmassspec-core   (this crate)
                      ^
         +------------+------------+
         |            |            |
@@ -139,9 +139,9 @@ The canonical schema is documented in
         |            |            |
         +------------+------------+
                      v
-               openproteo-io      (umbrella: detect_format, collect, to_mzml)
+               openmassspec-io      (umbrella: detect_format, collect, to_mzml)
                      |
         +------------+------------+
         |                         |
-  vendor2mzml CLI            openproteo (Python metapackage)
+  vendor2mzml CLI            openmassspec (Python metapackage)
 ```

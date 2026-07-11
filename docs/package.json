@@ -1,5 +1,5 @@
 {
-    "name": "openproteo-docs",
+    "name": "openmassspec-docs",
     "version": "0.0.0",
     "private": true,
     "scripts": {
@@ -7,7 +7,7 @@
         "start": "docusaurus start --port 25812",
         "dev": "docusaurus start --port 25812",
         "build": "docusaurus build",
-        "build:cloudflare": "docusaurus build --out-dir build/openproteo/docs",
+        "build:cloudflare": "docusaurus build --out-dir build/openmassspec/docs",
         "clear": "docusaurus clear",
         "serve": "docusaurus serve",
         "typecheck": "tsc",

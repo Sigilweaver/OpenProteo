@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "openproteo-docs",
+  "name": "openmassspec-docs",
   "compatibility_date": "2026-05-22",
   "observability": {
     "enabled": true
@@ -13,11 +13,11 @@
   ],
   "routes": [
     {
-      "pattern": "sigilweaver.app/openproteo/docs",
+      "pattern": "sigilweaver.app/openmassspec/docs",
       "zone_name": "sigilweaver.app"
     },
     {
-      "pattern": "sigilweaver.app/openproteo/docs/*",
+      "pattern": "sigilweaver.app/openmassspec/docs/*",
       "zone_name": "sigilweaver.app"
     }
   ]

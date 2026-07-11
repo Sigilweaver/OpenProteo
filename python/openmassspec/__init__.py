@@ -1,7 +1,7 @@
-"""OpenProteo: open proteomics vendor reader stack.
+"""OpenMassSpec: open proteomics vendor reader stack.
 
 This metapackage is the single pip install surface for the stack. The
-base install always brings ``openproteo_io`` (the Rust-backed reader
+base install always brings ``openmassspec_io`` (the Rust-backed reader
 that converts vendor inputs to mzML / Arrow); the per-vendor extras
 layer on direct Python bindings for each native vendor package:
 
@@ -11,16 +11,16 @@ layer on direct Python bindings for each native vendor package:
 
 Install the umbrella::
 
-    pip install openproteo            # openproteo_io only
-    pip install openproteo[thermo]    # + opentfraw
-    pip install openproteo[bruker]    # + opentimstdf
-    pip install openproteo[waters]    # + openwraw
-    pip install openproteo[all]       # + all vendor extensions
+    pip install openmassspec            # openmassspec_io only
+    pip install openmassspec[thermo]    # + opentfraw
+    pip install openmassspec[bruker]    # + opentimstdf
+    pip install openmassspec[waters]    # + openwraw
+    pip install openmassspec[all]       # + all vendor extensions
 
 Top-level helpers fall into two layers:
 
 * ``detect_format``, ``to_mzml``, ``iter_spectra`` are re-exports from
-  ``openproteo_io`` - the vendor-agnostic reader.
+  ``openmassspec_io`` - the vendor-agnostic reader.
 * ``detect``, ``open_run`` use only structural checks and dispatch to
   the vendor extension that matches the input path (requires the
   corresponding extra).
@@ -35,20 +35,20 @@ from pathlib import Path
 from typing import Optional
 
 try:
-    __version__ = _pkg_version("openproteo")
+    __version__ = _pkg_version("openmassspec")
 except PackageNotFoundError:  # pragma: no cover - source checkout fallback
     __version__ = "0.0.0+unknown"
 
-# Re-export the openproteo_io reader surface so callers can write
-# ``from openproteo import to_mzml, iter_spectra, detect_format``.
+# Re-export the openmassspec_io reader surface so callers can write
+# ``from openmassspec import to_mzml, iter_spectra, detect_format``.
 try:
-    from openproteo_io import (  # type: ignore[import-not-found]
+    from openmassspec_io import (  # type: ignore[import-not-found]
         Spectrum,
         iter_spectra,
         to_mzml,
     )
-    from openproteo_io import detect as detect_format  # type: ignore[import-not-found]
-except ImportError:  # pragma: no cover - openproteo_io is a hard dep
+    from openmassspec_io import detect as detect_format  # type: ignore[import-not-found]
+except ImportError:  # pragma: no cover - openmassspec_io is a hard dep
     Spectrum = None  # type: ignore[assignment]
     detect_format = None  # type: ignore[assignment]
     iter_spectra = None  # type: ignore[assignment]

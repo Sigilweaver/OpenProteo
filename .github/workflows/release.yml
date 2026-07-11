@@ -60,7 +60,7 @@ jobs:
           echo 'CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc' >> "$GITHUB_ENV"
 
       - name: Build vendor2mzml
-        run: cargo build --release -p openproteo-io-cli --target ${{ matrix.target }}
+        run: cargo build --release -p openmassspec-io-cli --target ${{ matrix.target }}
 
       - name: Package archive (unix)
         if: matrix.archive == 'tar.gz'

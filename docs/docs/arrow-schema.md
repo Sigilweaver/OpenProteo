@@ -1,6 +1,6 @@
 # Arrow schema
 
-`openproteo-core`'s `arrow` feature exposes a single record-batch
+`openmassspec-core`'s `arrow` feature exposes a single record-batch
 schema that is identical across all vendors. One row = one spectrum;
 peak arrays live in two `LargeList<Float>` columns alongside scalar
 metadata columns.
@@ -34,11 +34,11 @@ column is materialized but stays null).
 ## Building a batch
 
 ```rust,no_run
-use openproteo_core::arrow::{spectrum_record_schema, SpectrumBatchBuilder};
-use openproteo_core::SpectrumSource;
+use openmassspec_core::arrow::{spectrum_record_schema, SpectrumBatchBuilder};
+use openmassspec_core::SpectrumSource;
 
 let mut src = opentimstdf::mzml::TdfSource::open("sample.d")?;
-let mut b = SpectrumBatchBuilder::new(Some(openproteo_core::MobilityArrayKind::InverseK0));
+let mut b = SpectrumBatchBuilder::new(Some(openmassspec_core::MobilityArrayKind::InverseK0));
 for s in src.iter_spectra() {
     b.push(&s);
 }

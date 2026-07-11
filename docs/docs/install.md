@@ -2,15 +2,15 @@
 
 ## From source (Rust)
 
-OpenProteo targets Rust 2021, MSRV 1.75. The umbrella workspace lives
-at the `OpenProteo` repository and pulls the vendor crates in via
+OpenMassSpec targets Rust 2021, MSRV 1.75. The umbrella workspace lives
+at the `OpenMassSpec` repository and pulls the vendor crates in via
 path dependencies; for a stand-alone build, clone all five repos side
 by side:
 
 ```text
 .
-+-- OpenProteoCore/
-+-- OpenProteo/
++-- OpenMassSpecCore/
++-- OpenMassSpec/
 +-- OpenTFRaw/
 +-- OpenTimsTDF/
 +-- OpenWRaw/
@@ -19,19 +19,19 @@ by side:
 Then build the CLI:
 
 ```sh
-cd OpenProteo
-cargo build --release -p openproteo-io-cli
+cd OpenMassSpec
+cargo build --release -p openmassspec-io-cli
 ./target/release/vendor2mzml --help
 ```
 
 ## Python (PyPI)
 
-The Python bindings are distributed as `openproteo-io`. Wheels are
+The Python bindings are distributed as `openmassspec-io`. Wheels are
 abi3-py39, so a single wheel covers Python 3.9 and newer.
 
 ```sh
-pip install openproteo-io          # core
-pip install 'openproteo-io[arrow]' # with pyarrow zero-copy bridge
+pip install openmassspec-io          # core
+pip install 'openmassspec-io[arrow]' # with pyarrow zero-copy bridge
 ```
 
 ## Pre-built binaries
@@ -45,5 +45,5 @@ for:
 - `macos-aarch64`
 - `windows-x86_64`
 
-Download the archive for your platform from the [Releases](https://github.com/Sigilweaver/OpenProteo/releases)
+Download the archive for your platform from the [Releases](https://github.com/Sigilweaver/OpenMassSpec/releases)
 page, extract, and put `vendor2mzml` on your `PATH`.

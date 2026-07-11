@@ -19,7 +19,7 @@ for two decades, but they bring real costs:
    restricts redistribution, reverse engineering, and (in some cases)
    benchmarking publication.
 
-OpenProteo's pure-Rust readers address each of these:
+OpenMassSpec's pure-Rust readers address each of these:
 
 - **Single static binary.** `vendor2mzml` is one executable per
   platform with no external runtime dependencies (no .NET, no Wine,
@@ -39,11 +39,11 @@ OpenProteo's pure-Rust readers address each of these:
   TDF columns requires a real change to `opentimstdf`, not a free
   pickup from a vendor update.
 - **No proprietary acceleration.** Where Thermo's reader can call
-  into native FFT / centroiding, OpenProteo does the work in safe
+  into native FFT / centroiding, OpenMassSpec does the work in safe
   Rust. For most pipelines the difference is invisible; for raw-data
   hot paths it can matter.
 - **Less battle-tested on exotic files.** The vendor SDKs have been
-  hit with every weird acquisition ever made. OpenProteo has a
+  hit with every weird acquisition ever made. OpenMassSpec has a
   growing - but smaller - corpus. The conformance harness catches
   most regressions; please open an issue if you find a file we mis-
   parse.

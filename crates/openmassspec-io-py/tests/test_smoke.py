@@ -1,8 +1,8 @@
-"""Smoke tests for openproteo-io Python bindings.
+"""Smoke tests for openmassspec-io Python bindings.
 
 These tests require the OpenTFRaw / OpenTimsTDF / OpenWRaw test corpora.
-Set the env vars OPENPROTEO_THERMO_RAW, OPENPROTEO_BRUKER_D,
-OPENPROTEO_WATERS_RAW to point at one sample each; tests for vendors
+Set the env vars OPENMASSSPEC_THERMO_RAW, OPENMASSSPEC_BRUKER_D,
+OPENMASSSPEC_WATERS_RAW to point at one sample each; tests for vendors
 without a corpus path are skipped.
 """
 
@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import openproteo_io as opio
+import openmassspec_io as opio
 import pytest
 
 
@@ -26,9 +26,9 @@ def _corpus(envvar: str) -> Path | None:
 
 
 CORPORA = {
-    "thermo": _corpus("OPENPROTEO_THERMO_RAW"),
-    "bruker": _corpus("OPENPROTEO_BRUKER_D"),
-    "waters": _corpus("OPENPROTEO_WATERS_RAW"),
+    "thermo": _corpus("OPENMASSSPEC_THERMO_RAW"),
+    "bruker": _corpus("OPENMASSSPEC_BRUKER_D"),
+    "waters": _corpus("OPENMASSSPEC_WATERS_RAW"),
 }
 
 

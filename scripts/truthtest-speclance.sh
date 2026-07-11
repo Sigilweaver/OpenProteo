@@ -2,7 +2,7 @@
 # truthtest-speclance.sh - run SpecLance's integration tests as the
 # stack's truth test.
 #
-# SpecLance routes all vendor I/O through `openproteo-io` (STRATEGY P0
+# SpecLance routes all vendor I/O through `openmassspec-io` (STRATEGY P0
 # #1) and owns the end-to-end coverage that exercises the stack:
 # vendor ingest, mzML roundtrip, and Lance store read/write. This
 # script is intended to gate umbrella stack releases - see
