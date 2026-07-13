@@ -104,3 +104,59 @@ fn bruker_centroid_smoke() {
         "../../../OpenTimsTDF/re/artifacts/cache/pride/PXD036417/NQO1-F107C_coi-N2-P_200-0C_3996.d",
     ));
 }
+
+/// `stream()`/`metadata_only()` must agree with `collect()` on both the
+/// records visited and the run metadata returned, for every vendor. This
+/// is the property issue #3 asked for: a lazy path that doesn't buffer the
+/// whole run into a `Vec`, without silently diverging from the existing
+/// two-pass API.
+fn stream_matches_collect(input: PathBuf) {
+    if !input.exists() {
+        eprintln!("skipping {}: corpus not present", input.display());
+        return;
+    }
+    let det = openmassspec_io::detect_format(&input).expect("detect");
+
+    let (collected, collect_meta) = openmassspec_io::collect(det.clone()).expect("collect");
+
+    let mut streamed = Vec::new();
+    let stream_meta = openmassspec_io::stream(det.clone(), |rec| {
+        streamed.push(rec);
+        Ok(())
+    })
+    .expect("stream");
+
+    assert_eq!(streamed.len(), collected.len(), "record count mismatch");
+    for (a, b) in streamed.iter().zip(collected.iter()) {
+        assert_eq!(a.native_id, b.native_id);
+        assert_eq!(a.index, b.index);
+        assert_eq!(a.mz, b.mz);
+        assert_eq!(a.intensity, b.intensity);
+    }
+
+    let meta_only = openmassspec_io::metadata_only(det).expect("metadata_only");
+    assert_eq!(meta_only.instrument.name, collect_meta.instrument.name);
+    assert_eq!(meta_only.source_file_name, collect_meta.source_file_name);
+    assert_eq!(stream_meta.instrument.name, collect_meta.instrument.name);
+}
+
+#[test]
+fn thermo_stream_matches_collect() {
+    stream_matches_collect(PathBuf::from(
+        "../../../SpecLance/corpus/thermo/PXD068962_Q_Exactive_UHMR_insource-CID.raw",
+    ));
+}
+
+#[test]
+fn waters_stream_matches_collect() {
+    stream_matches_collect(PathBuf::from(
+        "../../../SpecLance/corpus/waters/PXD058812/molecular_mass_P15_01.raw",
+    ));
+}
+
+#[test]
+fn bruker_stream_matches_collect() {
+    stream_matches_collect(PathBuf::from(
+        "../../../OpenTimsTDF/re/artifacts/cache/pride/PXD036417/NQO1-F107C_coi-N2-P_200-0C_3996.d",
+    ));
+}
