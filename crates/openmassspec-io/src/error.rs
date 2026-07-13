@@ -56,6 +56,12 @@ pub enum Error {
     /// typed error suitable for `#[from]`.
     #[error("mzML error: {0}")]
     Mzml(String),
+
+    /// Returned by a [`stream`](crate::stream)/[`stream_centroided`](crate::stream_centroided)
+    /// `on_spectrum` callback to stop iteration early - not a decode
+    /// failure, just a request to bail out (e.g. the consumer went away).
+    #[error("streaming was cancelled")]
+    Cancelled,
 }
 
 /// Convenience alias mirroring the vendor crates.

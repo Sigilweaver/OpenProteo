@@ -655,6 +655,265 @@ pub fn collect_centroided(
     }
 }
 
+/// Like [`collect`], but visits each spectrum through `on_spectrum` as soon
+/// as it is decoded instead of buffering the whole run into a `Vec` first.
+/// Memory use is bounded by whatever `on_spectrum` itself retains, not by
+/// the acquisition size - the mzML/Arrow writers already stream this way
+/// internally; this gives callers that need their own second pass (Arrow
+/// batching, conformance checks, summaries) the same property instead of
+/// going through [`collect`].
+///
+/// If `on_spectrum` returns an error, iteration stops immediately and that
+/// error is returned.
+#[allow(clippy::needless_pass_by_value)]
+pub fn stream(
+    detected: Detected,
+    mut on_spectrum: impl FnMut(openmassspec_core::SpectrumRecord) -> Result<()>,
+) -> Result<openmassspec_core::RunMetadata> {
+    #[allow(unused_imports)]
+    use openmassspec_core::SpectrumSource;
+    match detected.format {
+        VendorFormat::ThermoRaw => {
+            #[cfg(feature = "thermo")]
+            {
+                use std::fs::File;
+                use std::io::BufReader;
+                let raw = opentfraw::RawFileReader::open_path(&detected.path)?;
+                let mut source = BufReader::with_capacity(2 << 20, File::open(&detected.path)?);
+                let filename = detected
+                    .path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("unknown.raw");
+                let mut src =
+                    opentfraw::mzml::OpenTfRawSource::new(&raw, &mut source, filename, false);
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "thermo"))]
+            Err(Error::FeatureDisabled { vendor: "thermo" })
+        }
+        VendorFormat::BrukerTdf => {
+            #[cfg(feature = "bruker")]
+            {
+                let mut src = opentimstdf::mzml::TdfSource::open(&detected.path)?;
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "bruker"))]
+            Err(Error::FeatureDisabled { vendor: "bruker" })
+        }
+        VendorFormat::WatersRaw => {
+            #[cfg(feature = "waters")]
+            {
+                let mut src = openwraw::mzml::WatersSource::open(&detected.path)?;
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "waters"))]
+            Err(Error::FeatureDisabled { vendor: "waters" })
+        }
+        VendorFormat::AgilentMassHunter => {
+            #[cfg(feature = "agilent")]
+            {
+                let mut src = openaraw::reader::Reader::open(&detected.path)?;
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "agilent"))]
+            Err(Error::FeatureDisabled { vendor: "agilent" })
+        }
+        VendorFormat::SciexWiff => {
+            #[cfg(feature = "sciex")]
+            {
+                let mut src = opensxraw::reader::Reader::open(&detected.path)?;
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "sciex"))]
+            Err(Error::FeatureDisabled { vendor: "sciex" })
+        }
+    }
+}
+
+/// Like [`stream`], but every profile-mode spectrum is centroided first via
+/// [`openmassspec_core::Centroided`]. Already-centroided spectra pass
+/// through unchanged. `min_intensity`, when `Some`, discards picked peaks
+/// below that noise floor.
+#[allow(clippy::needless_pass_by_value, unused_variables)]
+pub fn stream_centroided(
+    detected: Detected,
+    min_intensity: Option<f32>,
+    mut on_spectrum: impl FnMut(openmassspec_core::SpectrumRecord) -> Result<()>,
+) -> Result<openmassspec_core::RunMetadata> {
+    #[allow(unused_imports)]
+    use openmassspec_core::SpectrumSource;
+    match detected.format {
+        VendorFormat::ThermoRaw => {
+            #[cfg(feature = "thermo")]
+            {
+                use std::fs::File;
+                use std::io::BufReader;
+                let raw = opentfraw::RawFileReader::open_path(&detected.path)?;
+                let mut source = BufReader::with_capacity(2 << 20, File::open(&detected.path)?);
+                let filename = detected
+                    .path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("unknown.raw");
+                let src = opentfraw::mzml::OpenTfRawSource::new(&raw, &mut source, filename, false);
+                let mut src = with_min_intensity_opt(src, min_intensity);
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "thermo"))]
+            Err(Error::FeatureDisabled { vendor: "thermo" })
+        }
+        VendorFormat::BrukerTdf => {
+            #[cfg(feature = "bruker")]
+            {
+                let src = opentimstdf::mzml::TdfSource::open(&detected.path)?;
+                let mut src = with_min_intensity_opt(src, min_intensity);
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "bruker"))]
+            Err(Error::FeatureDisabled { vendor: "bruker" })
+        }
+        VendorFormat::WatersRaw => {
+            #[cfg(feature = "waters")]
+            {
+                let src = openwraw::mzml::WatersSource::open(&detected.path)?;
+                let mut src = with_min_intensity_opt(src, min_intensity);
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "waters"))]
+            Err(Error::FeatureDisabled { vendor: "waters" })
+        }
+        VendorFormat::AgilentMassHunter => {
+            #[cfg(feature = "agilent")]
+            {
+                let src = openaraw::reader::Reader::open(&detected.path)?;
+                let mut src = with_min_intensity_opt(src, min_intensity);
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "agilent"))]
+            Err(Error::FeatureDisabled { vendor: "agilent" })
+        }
+        VendorFormat::SciexWiff => {
+            #[cfg(feature = "sciex")]
+            {
+                let src = opensxraw::reader::Reader::open(&detected.path)?;
+                let mut src = with_min_intensity_opt(src, min_intensity);
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "sciex"))]
+            Err(Error::FeatureDisabled { vendor: "sciex" })
+        }
+    }
+}
+
+/// Return only the run-level metadata for `detected`, without decoding any
+/// spectra. Metadata (instrument, source file format, native ID format,
+/// software name/version) is already available as soon as the vendor
+/// source is opened, so callers that only need it - like the Python
+/// binding's `run_info` - can skip the decode pass entirely instead of
+/// going through [`collect`] and discarding the records.
+#[allow(clippy::needless_pass_by_value)]
+pub fn metadata_only(detected: Detected) -> Result<openmassspec_core::RunMetadata> {
+    #[allow(unused_imports)]
+    use openmassspec_core::SpectrumSource;
+    match detected.format {
+        VendorFormat::ThermoRaw => {
+            #[cfg(feature = "thermo")]
+            {
+                use std::fs::File;
+                use std::io::BufReader;
+                let raw = opentfraw::RawFileReader::open_path(&detected.path)?;
+                let mut source = BufReader::with_capacity(2 << 20, File::open(&detected.path)?);
+                let filename = detected
+                    .path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("unknown.raw");
+                let src = opentfraw::mzml::OpenTfRawSource::new(&raw, &mut source, filename, false);
+                Ok(src.run_metadata())
+            }
+            #[cfg(not(feature = "thermo"))]
+            Err(Error::FeatureDisabled { vendor: "thermo" })
+        }
+        VendorFormat::BrukerTdf => {
+            #[cfg(feature = "bruker")]
+            {
+                let src = opentimstdf::mzml::TdfSource::open(&detected.path)?;
+                Ok(src.run_metadata())
+            }
+            #[cfg(not(feature = "bruker"))]
+            Err(Error::FeatureDisabled { vendor: "bruker" })
+        }
+        VendorFormat::WatersRaw => {
+            #[cfg(feature = "waters")]
+            {
+                let src = openwraw::mzml::WatersSource::open(&detected.path)?;
+                Ok(src.run_metadata())
+            }
+            #[cfg(not(feature = "waters"))]
+            Err(Error::FeatureDisabled { vendor: "waters" })
+        }
+        VendorFormat::AgilentMassHunter => {
+            #[cfg(feature = "agilent")]
+            {
+                let src = openaraw::reader::Reader::open(&detected.path)?;
+                Ok(src.run_metadata())
+            }
+            #[cfg(not(feature = "agilent"))]
+            Err(Error::FeatureDisabled { vendor: "agilent" })
+        }
+        VendorFormat::SciexWiff => {
+            #[cfg(feature = "sciex")]
+            {
+                let src = opensxraw::reader::Reader::open(&detected.path)?;
+                Ok(src.run_metadata())
+            }
+            #[cfg(not(feature = "sciex"))]
+            Err(Error::FeatureDisabled { vendor: "sciex" })
+        }
+    }
+}
+
 /// A trivial in-memory [`openmassspec_core::SpectrumSource`] backed by a
 /// `Vec<SpectrumRecord>` + a [`openmassspec_core::RunMetadata`]. Hand it
 /// to `openmassspec_core::write_mzml` when you already have the records

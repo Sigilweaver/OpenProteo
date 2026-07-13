@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- `openmassspec-io` gains `stream`/`stream_centroided` (visit each spectrum
+  via a callback as it's decoded, instead of buffering the whole run into
+  a `Vec` like `collect`/`collect_centroided` do) and `metadata_only` (read
+  run-level metadata without decoding any spectra at all). Memory is now
+  bounded by whatever the caller retains, not by acquisition size.
+- The Python binding's `iter_spectra` now decodes on a background thread
+  and hands spectra across one at a time through a bounded channel,
+  instead of eagerly collecting every spectrum before the first one
+  reaches Python. `run_info` uses `metadata_only` and no longer decodes
+  any spectra, and `read_arrow` builds its Arrow batches incrementally
+  via `stream`/`stream_centroided` instead of materializing the whole run
+  as `SpectrumRecord`s first. Closes #3.
+
 ### Security
 
 - Upgraded `pyo3`/`numpy` from 0.28 to 0.29 and `arrow` from 58 to 59 in

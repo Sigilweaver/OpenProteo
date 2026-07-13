@@ -50,22 +50,6 @@ fn detected_or_err(path: &Path) -> PyResult<Detected> {
     })
 }
 
-/// Collect every spectrum from `detected` into a single `Vec`, optionally
-/// centroiding every profile-mode spectrum first. Delegates to
-/// `openmassspec_io::collect`/`collect_centroided`, which already know how
-/// to construct each vendor's reader.
-fn collect_records(
-    detected: &Detected,
-    centroid: bool,
-    min_intensity: Option<f32>,
-) -> openmassspec_io::Result<(Vec<SpectrumRecord>, openmassspec_core::RunMetadata)> {
-    if centroid {
-        openmassspec_io::collect_centroided(detected.clone(), min_intensity)
-    } else {
-        openmassspec_io::collect(detected.clone())
-    }
-}
-
 fn map_err<E: std::fmt::Display>(e: E) -> PyErr {
     PyRuntimeError::new_err(e.to_string())
 }
@@ -316,9 +300,60 @@ impl RunInfo {
 // SpectrumIter
 // ---------------------------------------------------------------------
 
+/// Sent from the background decode thread to the Python-facing iterator.
+/// A bounded (capacity-1) channel keeps at most one decoded-but-not-yet-
+/// consumed spectrum in flight, so memory is bounded by one spectrum
+/// rather than the whole run.
+enum StreamMsg {
+    Record(Box<SpectrumRecord>),
+    Done(Result<(), String>),
+}
+
 #[pyclass(module = "openmassspec_io._openmassspec_io")]
 struct SpectrumIter {
-    records: std::vec::IntoIter<SpectrumRecord>,
+    // `mpsc::Receiver` is `Send` but not `Sync`; pyclasses must be both, so
+    // it's parked behind a `Mutex` even though only one thread (the one
+    // holding the GIL) ever calls `recv` at a time.
+    rx: std::sync::Mutex<std::sync::mpsc::Receiver<StreamMsg>>,
+    // Kept alive so the decode thread is detached (not joined) only once
+    // the iterator itself is dropped; we don't join explicitly since
+    // dropping `rx` already makes the thread's next `send` fail and
+    // return promptly.
+    _handle: std::thread::JoinHandle<()>,
+    finished: bool,
+}
+
+impl SpectrumIter {
+    fn spawn(detected: Detected, centroid: bool, min_intensity: Option<f32>) -> Self {
+        let (tx, rx) = std::sync::mpsc::sync_channel::<StreamMsg>(1);
+        let handle = std::thread::spawn(move || {
+            let send_rec = |tx: &std::sync::mpsc::SyncSender<StreamMsg>, rec: SpectrumRecord| {
+                if tx.send(StreamMsg::Record(Box::new(rec))).is_ok() {
+                    Ok(())
+                } else {
+                    Err(openmassspec_io::Error::Cancelled)
+                }
+            };
+            let result = if centroid {
+                openmassspec_io::stream_centroided(detected, min_intensity, |rec| {
+                    send_rec(&tx, rec)
+                })
+            } else {
+                openmassspec_io::stream(detected, |rec| send_rec(&tx, rec))
+            };
+            let outcome = match result {
+                Ok(_meta) => Ok(()),
+                Err(openmassspec_io::Error::Cancelled) => return,
+                Err(e) => Err(e.to_string()),
+            };
+            let _ = tx.send(StreamMsg::Done(outcome));
+        });
+        SpectrumIter {
+            rx: std::sync::Mutex::new(rx),
+            _handle: handle,
+            finished: false,
+        }
+    }
 }
 
 #[pymethods]
@@ -326,8 +361,28 @@ impl SpectrumIter {
     fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
         slf
     }
-    fn __next__(mut slf: PyRefMut<'_, Self>) -> Option<Spectrum> {
-        slf.records.next().map(|rec| Spectrum { rec: Some(rec) })
+    fn __next__(mut slf: PyRefMut<'_, Self>, py: Python<'_>) -> PyResult<Option<Spectrum>> {
+        if slf.finished {
+            return Ok(None);
+        }
+        let rx = &slf.rx;
+        match py.detach(|| rx.lock().expect("iter mutex poisoned").recv()) {
+            Ok(StreamMsg::Record(rec)) => Ok(Some(Spectrum { rec: Some(*rec) })),
+            Ok(StreamMsg::Done(Ok(()))) => {
+                slf.finished = true;
+                Ok(None)
+            }
+            Ok(StreamMsg::Done(Err(e))) => {
+                slf.finished = true;
+                Err(PyRuntimeError::new_err(e))
+            }
+            Err(_recv_error) => {
+                slf.finished = true;
+                Err(PyRuntimeError::new_err(
+                    "spectrum decode thread ended without a result",
+                ))
+            }
+        }
     }
 }
 
@@ -371,6 +426,11 @@ fn to_mzml(
 }
 
 /// Return run-level metadata for a vendor acquisition without iterating spectra.
+///
+/// `centroid`/`centroid_min_intensity` are accepted for signature stability
+/// but have no effect: centroiding only reshapes per-spectrum peaks, not
+/// the run-level metadata this returns, so no spectrum needs to be decoded
+/// at all.
 #[pyfunction]
 #[pyo3(signature = (path, *, centroid = false, centroid_min_intensity = None))]
 fn run_info(
@@ -379,14 +439,17 @@ fn run_info(
     centroid: bool,
     centroid_min_intensity: Option<f32>,
 ) -> PyResult<RunInfo> {
+    let _ = (centroid, centroid_min_intensity);
     let detected = detected_or_err(&path)?;
-    let (_records, meta) = py
-        .detach(|| collect_records(&detected, centroid, centroid_min_intensity))
+    let meta = py
+        .detach(|| openmassspec_io::metadata_only(detected))
         .map_err(map_err)?;
     Ok(RunInfo { meta })
 }
 
-/// Iterate every spectrum in a vendor acquisition.
+/// Iterate every spectrum in a vendor acquisition. Spectra are decoded on a
+/// background thread and handed across one at a time, so memory is bounded
+/// by a single in-flight spectrum rather than the whole run.
 #[pyfunction]
 #[pyo3(signature = (path, *, centroid = false, centroid_min_intensity = None))]
 fn iter_spectra(
@@ -396,14 +459,9 @@ fn iter_spectra(
     centroid_min_intensity: Option<f32>,
 ) -> PyResult<Py<SpectrumIter>> {
     let detected = detected_or_err(&path)?;
-    let (records, _meta) = py
-        .detach(|| collect_records(&detected, centroid, centroid_min_intensity))
-        .map_err(map_err)?;
     Py::new(
         py,
-        SpectrumIter {
-            records: records.into_iter(),
-        },
+        SpectrumIter::spawn(detected, centroid, centroid_min_intensity),
     )
 }
 
@@ -433,12 +491,23 @@ mod arrow_bridge {
             return Err(PyValueError::new_err("batch_size must be > 0"));
         }
         let detected = detected_or_err(&path)?;
-        let (records, meta) = py
-            .detach(|| collect_records(&detected, centroid, centroid_min_intensity))
+        // Metadata (including the mobility array kind the batch builder
+        // needs) is available as soon as the source is opened, so it does
+        // not require decoding any spectra.
+        let meta = py
+            .detach(|| openmassspec_io::metadata_only(detected.clone()))
             .map_err(map_err)?;
         let mobility_kind = meta.mobility_array_kind;
         let batches = py
-            .detach(|| build_batches(records, batch_size, mobility_kind))
+            .detach(|| {
+                stream_batches(
+                    detected,
+                    centroid,
+                    centroid_min_intensity,
+                    batch_size,
+                    mobility_kind,
+                )
+            })
             .map_err(map_err)?;
 
         // Hand the batches to pyarrow as a RecordBatchReader.
@@ -453,25 +522,62 @@ mod arrow_bridge {
             .call_method1("from_batches", (py_schema, py_batches))
     }
 
-    fn build_batches(
-        records: Vec<SpectrumRecord>,
+    /// Push spectra into `batch_size`-row Arrow batches as they are
+    /// decoded, instead of collecting the whole run into a `Vec` first -
+    /// bounds memory to one in-progress batch rather than every spectrum
+    /// in the acquisition.
+    fn stream_batches(
+        detected: Detected,
+        centroid: bool,
+        min_intensity: Option<f32>,
         batch_size: usize,
         mobility_kind: Option<openmassspec_core::MobilityArrayKind>,
-    ) -> Result<Vec<RecordBatch>, ::arrow::error::ArrowError> {
+    ) -> Result<Vec<RecordBatch>, String> {
         let mut out = Vec::new();
         let mut builder = SpectrumBatchBuilder::new(mobility_kind);
         let mut n = 0usize;
-        for rec in records {
+        // `stream`'s callback must return `openmassspec_io::Result<()>`; an
+        // Arrow batch-finish failure isn't one of that enum's variants, so
+        // it's stashed here and `Cancelled` is used to stop iteration, then
+        // surfaced below once streaming has returned.
+        let mut arrow_err: Option<::arrow::error::ArrowError> = None;
+
+        let on_spectrum = |rec: SpectrumRecord| -> openmassspec_io::Result<()> {
             builder.push(&rec);
             n += 1;
             if n == batch_size {
-                out.push(builder.finish()?);
-                builder = SpectrumBatchBuilder::new(mobility_kind);
-                n = 0;
+                // `finish` consumes `self`, so swap in a fresh builder
+                // rather than moving `builder` out of this `FnMut`'s
+                // captured environment.
+                let finished =
+                    std::mem::replace(&mut builder, SpectrumBatchBuilder::new(mobility_kind));
+                match finished.finish() {
+                    Ok(b) => {
+                        out.push(b);
+                        n = 0;
+                    }
+                    Err(e) => {
+                        arrow_err = Some(e);
+                        return Err(openmassspec_io::Error::Cancelled);
+                    }
+                }
             }
+            Ok(())
+        };
+
+        let stream_result = if centroid {
+            openmassspec_io::stream_centroided(detected, min_intensity, on_spectrum)
+        } else {
+            openmassspec_io::stream(detected, on_spectrum)
+        };
+
+        if let Some(e) = arrow_err {
+            return Err(e.to_string());
         }
+        stream_result.map_err(|e| e.to_string())?;
+
         if n > 0 {
-            out.push(builder.finish()?);
+            out.push(builder.finish().map_err(|e| e.to_string())?);
         }
         Ok(out)
     }
