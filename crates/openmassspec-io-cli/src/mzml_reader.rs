@@ -82,6 +82,7 @@ fn spectrum_to_record(stream_index: usize, s: RawSpectrum) -> SpectrumRecord {
         high_mz: None,
         ion_injection_time_ms: None,
         inv_mobility: None,
+        faims_cv: None,
         precursor,
         mz,
         intensity,

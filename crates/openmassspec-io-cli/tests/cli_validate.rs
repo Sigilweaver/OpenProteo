@@ -71,6 +71,7 @@ fn make_record(index: usize, scan: u32, ms_level: u32, rt_sec: f64) -> SpectrumR
         high_mz: Some(300.0),
         ion_injection_time_ms: None,
         inv_mobility: None,
+        faims_cv: None,
         precursor,
         mz,
         intensity,
