@@ -23,7 +23,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 REF="${1:-HEAD}"
-SHA="$(git -C "$REPO_DIR" rev-parse "$REF")"
+# `^{commit}` peels annotated tags to the commit they point at; git rev-parse
+# on an annotated tag alone returns the tag object's own SHA, which never
+# matches a workflow run's head SHA.
+SHA="$(git -C "$REPO_DIR" rev-parse "${REF}^{commit}")"
 
 # Query the most recent run of a workflow for $SHA and judge it. Prints
 # a one-line status to stderr; returns non-zero unless the run exists,
