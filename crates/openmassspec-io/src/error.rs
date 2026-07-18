@@ -52,6 +52,11 @@ pub enum Error {
     #[error(transparent)]
     Sciex(#[from] opensxraw::Error),
 
+    /// Shimadzu (`openszraw`) error.
+    #[cfg(feature = "shimadzu")]
+    #[error(transparent)]
+    Shimadzu(#[from] openszraw::Error),
+
     /// mzML parsing error. Kept as a string until `mzdata` exposes a
     /// typed error suitable for `#[from]`.
     #[error("mzML error: {0}")]

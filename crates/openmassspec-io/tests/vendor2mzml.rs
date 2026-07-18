@@ -7,6 +7,23 @@
 use std::fs;
 use std::path::PathBuf;
 
+/// Derive a filesystem-safe, per-input-file component for temp output
+/// names. Needed because several vendors (e.g. Shimadzu's three on-disk
+/// variants) share one `VendorFormat::name()`, so `name()` + pid alone
+/// is not unique enough once more than one smoke test exists per
+/// vendor. Tests run in parallel by default, and two tests racing on
+/// the same temp path caused spurious "No such file or directory"
+/// failures before this was added.
+fn input_tag(input: &std::path::Path) -> String {
+    input
+        .file_stem()
+        .and_then(|s| s.to_str())
+        .unwrap_or("input")
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() { c } else { '_' })
+        .collect()
+}
+
 fn smoke(input: PathBuf) {
     if !input.exists() {
         eprintln!("skipping {}: corpus not present", input.display());
@@ -14,8 +31,9 @@ fn smoke(input: PathBuf) {
     }
     let det = openmassspec_io::detect_format(&input).expect("detect");
     let out = std::env::temp_dir().join(format!(
-        "msio-smoke-{}-{}.mzML",
+        "msio-smoke-{}-{}-{}.mzML",
         det.format.name(),
+        input_tag(&input),
         std::process::id()
     ));
     openmassspec_io::convert_to_mzml(det, &out, false).expect("convert");
@@ -55,6 +73,27 @@ fn bruker_smoke() {
     ));
 }
 
+#[test]
+fn shimadzu_qgd_smoke() {
+    smoke(PathBuf::from(
+        "../../../Data/SZRaw/PXD034978/49_27a__8122021_11.qgd",
+    ));
+}
+
+#[test]
+fn shimadzu_lcd_ittof_smoke() {
+    smoke(PathBuf::from(
+        "../../../Data/SZRaw/MTBLS432/6-wk_HZ_CC_male_12_65__30min_pos-neg_43.lcd",
+    ));
+}
+
+#[test]
+fn shimadzu_lcd_qtof_smoke() {
+    smoke(PathBuf::from(
+        "../../../Data/SZRaw/MSV000084197/20190607_NM16.lcd",
+    ));
+}
+
 /// After `convert_to_mzml_centroided`, no spectrum in the output should
 /// still be tagged profile mode - every profile spectrum was centroided,
 /// and every already-centroid spectrum passed through unchanged. This
@@ -67,8 +106,9 @@ fn centroid_smoke(input: PathBuf) {
     }
     let det = openmassspec_io::detect_format(&input).expect("detect");
     let out = std::env::temp_dir().join(format!(
-        "msio-centroid-smoke-{}-{}.mzML",
+        "msio-centroid-smoke-{}-{}-{}.mzML",
         det.format.name(),
+        input_tag(&input),
         std::process::id()
     ));
     openmassspec_io::convert_to_mzml_centroided(det, &out, false, None).expect("convert");
@@ -102,6 +142,15 @@ fn waters_centroid_smoke() {
 fn bruker_centroid_smoke() {
     centroid_smoke(PathBuf::from(
         "../../../OpenTimsTDF/re/artifacts/cache/pride/PXD036417/NQO1-F107C_coi-N2-P_200-0C_3996.d",
+    ));
+}
+
+#[test]
+fn shimadzu_centroid_smoke() {
+    // The QTOF variant is already centroid; MS1000127 should still be
+    // present (pass-through), same invariant as the other vendors' tests.
+    centroid_smoke(PathBuf::from(
+        "../../../Data/SZRaw/MSV000084197/20190607_NM16.lcd",
     ));
 }
 
@@ -158,5 +207,12 @@ fn waters_stream_matches_collect() {
 fn bruker_stream_matches_collect() {
     stream_matches_collect(PathBuf::from(
         "../../../OpenTimsTDF/re/artifacts/cache/pride/PXD036417/NQO1-F107C_coi-N2-P_200-0C_3996.d",
+    ));
+}
+
+#[test]
+fn shimadzu_stream_matches_collect() {
+    stream_matches_collect(PathBuf::from(
+        "../../../Data/SZRaw/PXD034978/49_27a__8122021_11.qgd",
     ));
 }

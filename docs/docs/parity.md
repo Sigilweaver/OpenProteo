@@ -8,27 +8,28 @@ other vendor populates it - doesn't sit unnoticed the way
 [OpenWRaw#8](https://github.com/Sigilweaver/OpenWRaw/issues/8) did before
 this table existed.
 
-Last verified: 2026-07-15, by reading each vendor crate's `SpectrumRecord`/
-`RunMetadata` conversion code directly (not by trusting older issue text).
+Last verified: 2026-07-18 (Shimadzu column only, by reading
+`crates/openszraw/src/reader.rs` directly; all other columns last
+verified 2026-07-15 - see git history for that verification).
 
 **Legend:** yes = populated from real decoded data · partial = populated in
 some cases, see note · no = hardcoded `None`/placeholder, see note · N/A =
 the field doesn't apply to this vendor's instrument class.
 
-| Field | Thermo<br/>(OpenTFRaw) | Bruker<br/>(OpenTimsTDF) | Waters<br/>(OpenWRaw) | Agilent<br/>(OpenARaw) | SCIEX<br/>(OpenSXRaw) |
-|---|---|---|---|---|---|
-| Precursor target/selected m/z | yes | yes (diaPASEF: target = selected = isolation m/z) | no ([#8](https://github.com/Sigilweaver/OpenWRaw/issues/8)) | partial: no `selected_mz`, format doesn't carry it | partial: DDE-cycle heuristic, "unknown" edge case |
-| Precursor charge | yes | partial: PASEF yes, diaPASEF no (DIA has no single charge) | no (no precursor at all, [#8](https://github.com/Sigilweaver/OpenWRaw/issues/8)) | no | no |
-| Precursor CE (NCE vs eV distinguished) | yes | yes, always eV (correct for the format - `ce_is_nce` fixed `false`) | N/A (no precursor) | partial: value real, NCE/eV never distinguished | no |
-| Polarity | yes | yes | yes | no: documented unrecoverable from format | no |
-| Filter string / equivalent | yes | N/A | N/A | N/A | N/A |
-| Raw ion mobility (native units) | N/A (no IMS) | yes (scalar + per-peak) | partial: per-peak `drift_time_ms` populated for IMS scans, scalar `inv_mobility` left `None` | N/A | N/A |
-| Calibrated CCS | N/A | no ([#14](https://github.com/Sigilweaver/OpenTimsTDF/issues/14)) | no ([#10](https://github.com/Sigilweaver/OpenWRaw/issues/10)) | N/A | N/A |
-| Chromatograms (`iter_chromatograms`) | no override | no override | no override (decoder exists in `chroms.rs`, unused - [#9](https://github.com/Sigilweaver/OpenWRaw/issues/9)) | no override | no override |
-| Instrument model / CV resolution | yes, real lookup table | yes, real lookup table (5 of 10 entries had wrong PSI-MS accessions, fixed [2026-07-15](https://github.com/Sigilweaver/OpenTimsTDF/issues/15)) | yes for models with a unique CV term; 3 Synapt variants fall back to the generic term rather than guess between HDMS/MS ([#11](https://github.com/Sigilweaver/OpenWRaw/issues/11)) | yes, real lookup + documented fallback | no: hardcoded placeholder, investigated and documented as currently unresolvable from the format |
-| Acquisition start timestamp | yes | yes (RFC 3339-validated) | yes (format bug fixed [2026-07-15](https://github.com/Sigilweaver/OpenWRaw/issues/11) - previously emitted `"14-Jan-2021 16:20:52"`, not valid RFC 3339) | yes | yes (OLE SummaryInformation stream, graceful `None` fallback) |
-| Ion injection time | yes | yes | no | no | no |
-| FAIMS compensation voltage | no: schema field exists ([openmassspec-core 1.2.0](https://github.com/Sigilweaver/OpenMassSpecCore/releases/tag/v1.2.0)), not yet wired into the conversion ([#27](https://github.com/Sigilweaver/OpenTFRaw/issues/27)) | N/A | N/A | N/A | N/A |
+| Field | Thermo<br/>(OpenTFRaw) | Bruker<br/>(OpenTimsTDF) | Waters<br/>(OpenWRaw) | Agilent<br/>(OpenARaw) | SCIEX<br/>(OpenSXRaw) | Shimadzu<br/>(OpenSZRaw) |
+|---|---|---|---|---|---|---|
+| Precursor target/selected m/z | yes | yes (diaPASEF: target = selected = isolation m/z) | no ([#8](https://github.com/Sigilweaver/OpenWRaw/issues/8)) | partial: no `selected_mz`, format doesn't carry it | partial: DDE-cycle heuristic, "unknown" edge case | partial: `.qgd` MRM has real target/selected m/z; `.lcd` QTOF MS2 has none decoded ([#1002998 DDA stream](https://github.com/Sigilweaver/OpenSZRaw/blob/main/docs/format/06-known-limitations.md) undecoded); `.lcd` IT-TOF has no precursor concept at all |
+| Precursor charge | yes | partial: PASEF yes, diaPASEF no (DIA has no single charge) | no (no precursor at all, [#8](https://github.com/Sigilweaver/OpenWRaw/issues/8)) | no | no | no |
+| Precursor CE (NCE vs eV distinguished) | yes | yes, always eV (correct for the format - `ce_is_nce` fixed `false`) | N/A (no precursor) | partial: value real, NCE/eV never distinguished | no | no |
+| Polarity | yes | yes | yes | no: documented unrecoverable from format | no | no: documented unrecoverable from format (no polarity bit found in any of the three on-disk variants) |
+| Filter string / equivalent | yes | N/A | N/A | N/A | N/A | N/A |
+| Raw ion mobility (native units) | N/A (no IMS) | yes (scalar + per-peak) | partial: per-peak `drift_time_ms` populated for IMS scans, scalar `inv_mobility` left `None` | N/A | N/A | N/A (no IMS) |
+| Calibrated CCS | N/A | no ([#14](https://github.com/Sigilweaver/OpenTimsTDF/issues/14)) | no ([#10](https://github.com/Sigilweaver/OpenWRaw/issues/10)) | N/A | N/A | N/A |
+| Chromatograms (`iter_chromatograms`) | no override | no override | no override (decoder exists in `chroms.rs`, unused - [#9](https://github.com/Sigilweaver/OpenWRaw/issues/9)) | no override | no override | no override (`PDA 3D Raw Data`/`LSS Raw Data` not decoded at all - [OpenSZRaw#2](https://github.com/Sigilweaver/OpenSZRaw/issues/2)) |
+| Instrument model / CV resolution | yes, real lookup table | yes, real lookup table (5 of 10 entries had wrong PSI-MS accessions, fixed [2026-07-15](https://github.com/Sigilweaver/OpenTimsTDF/issues/15)) | yes for models with a unique CV term; 3 Synapt variants fall back to the generic term rather than guess between HDMS/MS ([#11](https://github.com/Sigilweaver/OpenWRaw/issues/11)) | yes, real lookup + documented fallback | no: hardcoded placeholder, investigated and documented as currently unresolvable from the format | partial: `.lcd` IT-TOF and QTOF each resolve a real specific PSI-MS instrument term; `.qgd` falls back to the generic "Shimadzu instrument model" term - no per-file model string found decoded anywhere in the corpus |
+| Acquisition start timestamp | yes | yes (RFC 3339-validated) | yes (format bug fixed [2026-07-15](https://github.com/Sigilweaver/OpenWRaw/issues/11) - previously emitted `"14-Jan-2021 16:20:52"`, not valid RFC 3339) | yes | yes (OLE SummaryInformation stream, graceful `None` fallback) | no |
+| Ion injection time | yes | yes | no | no | no | no |
+| FAIMS compensation voltage | no: schema field exists ([openmassspec-core 1.2.0](https://github.com/Sigilweaver/OpenMassSpecCore/releases/tag/v1.2.0)), not yet wired into the conversion ([#27](https://github.com/Sigilweaver/OpenTFRaw/issues/27)) | N/A | N/A | N/A | N/A | N/A (Shimadzu instruments have no FAIMS interface) |
 
 ## Shared-layer gaps (affect every vendor equally)
 

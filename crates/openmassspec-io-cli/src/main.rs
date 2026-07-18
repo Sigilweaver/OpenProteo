@@ -1,4 +1,4 @@
-//! `vendor2mzml`: convert Thermo / Bruker / Waters / Agilent / SCIEX acquisitions to mzML,
+//! `vendor2mzml`: convert Thermo / Bruker / Waters / Agilent / SCIEX / Shimadzu acquisitions to mzML,
 //! print a one-pass summary of one, or validate a vendor or mzML input
 //! against the openmassspec-core conformance harness.
 
@@ -26,7 +26,7 @@ use openmassspec_io::{
     name = "vendor2mzml",
     version,
     long_version = long_version_str(),
-    about = "Convert Thermo / Bruker / Waters / Agilent / SCIEX raw acquisitions to mzML."
+    about = "Convert Thermo / Bruker / Waters / Agilent / SCIEX / Shimadzu raw acquisitions to mzML."
 )]
 struct Cli {
     #[command(subcommand)]

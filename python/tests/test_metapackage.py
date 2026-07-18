@@ -22,7 +22,14 @@ def test_version_string():
 
 
 def test_vendors_tuple():
-    assert openmassspec.VENDORS == ("thermo", "bruker", "waters", "agilent", "sciex")
+    assert openmassspec.VENDORS == (
+        "thermo",
+        "bruker",
+        "waters",
+        "agilent",
+        "sciex",
+        "shimadzu",
+    )
 
 
 def test_detect_thermo_file(tmp_path: Path):
@@ -58,6 +65,18 @@ def test_detect_sciex_wiff(tmp_path: Path):
     f.write_bytes(b"")
     (tmp_path / "sample.wiff.scan").write_bytes(b"")
     assert openmassspec.detect(f) == "sciex"
+
+
+def test_detect_shimadzu_lcd(tmp_path: Path):
+    f = tmp_path / "sample.lcd"
+    f.write_bytes(b"")
+    assert openmassspec.detect(f) == "shimadzu"
+
+
+def test_detect_shimadzu_qgd(tmp_path: Path):
+    f = tmp_path / "sample.qgd"
+    f.write_bytes(b"")
+    assert openmassspec.detect(f) == "shimadzu"
 
 
 def test_detect_wiff_without_scan_is_none(tmp_path: Path):
@@ -174,16 +193,39 @@ def test_open_run_agilent_dispatch(monkeypatch, tmp_path: Path):
     assert calls == [("agilent", str(d))]
 
 
-def test_open_run_sciex_raises_no_standalone_package(tmp_path: Path):
-    import pytest
+def test_open_run_sciex_dispatch(monkeypatch, tmp_path: Path):
+    """``open_run`` on a SCIEX file imports opensxraw and calls ``RawReader``."""
+    import sys
+    import types
 
     f = tmp_path / "sample.wiff"
     f.write_bytes(b"")
     (tmp_path / "sample.wiff.scan").write_bytes(b"")
-    # SCIEX reads through the base binding (to_mzml/iter_spectra), but there
-    # is no standalone Python package for open_run to import.
-    with pytest.raises(ImportError):
-        openmassspec.open_run(f)
+    calls: list[str] = []
+
+    fake = types.ModuleType("opensxraw")
+    fake.RawReader = lambda p: calls.append(("sciex", p)) or "sciex-handle"  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "opensxraw", fake)
+
+    assert openmassspec.open_run(f) == "sciex-handle"
+    assert calls == [("sciex", str(f))]
+
+
+def test_open_run_shimadzu_dispatch(monkeypatch, tmp_path: Path):
+    """``open_run`` on a Shimadzu file imports openszraw and calls ``RawReader``."""
+    import sys
+    import types
+
+    f = tmp_path / "sample.lcd"
+    f.write_bytes(b"")
+    calls: list[str] = []
+
+    fake = types.ModuleType("openszraw")
+    fake.RawReader = lambda p: calls.append(("shimadzu", p)) or "shimadzu-handle"  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "openszraw", fake)
+
+    assert openmassspec.open_run(f) == "shimadzu-handle"
+    assert calls == [("shimadzu", str(f))]
 
 
 def test_vendors_is_immutable_tuple():

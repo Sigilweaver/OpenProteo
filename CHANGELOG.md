@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-07-18
+
+### Added
+
+- Sixth vendor: Shimadzu LabSolutions `.qgd` (GC-MS) and `.lcd` (LC-MS,
+  IT-TOF/QTOF) files, via a new `shimadzu` feature backed by
+  [`openszraw`](https://github.com/Sigilweaver/OpenSZRaw) 0.1.0.
+  `detect_format` identifies Shimadzu files by `.qgd`/`.lcd` extension
+  plus a CFBF/OLE2 magic-byte check (no sibling file to corroborate
+  against, unlike SCIEX's `.wiff`/`.wiff.scan` pair). All three on-disk
+  Shimadzu variants (`.qgd`, `.lcd` IT-TOF, `.lcd` QTOF) share one
+  `VendorFormat::ShimadzuLabSolutions` and one `shimadzu` feature, since
+  `openszraw::reader::Reader` already auto-detects between them from
+  the file's own CFBF stream layout. Wired into every dispatch path
+  (`convert_to_mzml`, `collect`, `stream`, `metadata_only`, and their
+  `_centroided` variants), the `openmassspec` Python metapackage's
+  `detect`/`open_run`, and the `all` meta-feature.
+- Added `OpenSZRaw` to `scripts/release-stack.sh`'s tracked repos and
+  `STACK.md`'s pin table.
+
+### Fixed
+
+- `crates/openmassspec-io/tests/vendor2mzml.rs`'s `smoke()`/
+  `centroid_smoke()` helpers derived their temp output filename from
+  `VendorFormat::name()` + process id alone, which collided whenever
+  more than one smoke test shared a vendor name (as Shimadzu's three
+  on-disk variants now do) - tests run in parallel by default, so two
+  tests racing on the same temp path caused spurious "No such file or
+  directory" failures. Fixed by adding a sanitized per-input-file tag
+  to the temp filename.
+
 ## [1.4.0] - 2026-07-13
 
 ### Added

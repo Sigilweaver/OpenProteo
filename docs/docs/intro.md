@@ -6,10 +6,10 @@ title: Introduction
 # OpenMassSpec
 
 OpenMassSpec is a pure-Rust mass-spectrometry I/O stack. It reads native
-vendor acquisitions from Thermo Fisher, Bruker, Waters, Agilent, and
-SCIEX instruments and emits standards-compliant mzML, Arrow record
-batches, or native Rust / Python data structures - without any vendor
-SDK, runtime, or binary blob.
+vendor acquisitions from Thermo Fisher, Bruker, Waters, Agilent, SCIEX,
+and Shimadzu instruments and emits standards-compliant mzML, Arrow
+record batches, or native Rust / Python data structures - without any
+vendor SDK, runtime, or binary blob.
 
 ## What is in the box
 
@@ -24,6 +24,7 @@ SDK, runtime, or binary blob.
 | `openwraw`         | Waters MassLynx `.raw/` reader.                          |
 | `openaraw`         | Agilent MassHunter `.d/` reader.                         |
 | `opensxraw`        | SCIEX legacy `.wiff`/`.wiff.scan` reader.                |
+| `openszraw`        | Shimadzu LabSolutions `.qgd`/`.lcd` reader.               |
 
 ## Design goals
 
@@ -35,7 +36,7 @@ SDK, runtime, or binary blob.
    this against the PSI-MS controlled vocabulary.
 3. **One schema across vendors.** Every reader yields the same
    `SpectrumRecord` shape; Arrow batches share a single schema across
-   Thermo / Bruker / Waters / Agilent / SCIEX.
+   Thermo / Bruker / Waters / Agilent / SCIEX / Shimadzu.
 4. **Streaming where possible.** Spectra are produced as an iterator;
    the mzML writer never buffers the full run.
 

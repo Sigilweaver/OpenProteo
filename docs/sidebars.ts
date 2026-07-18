@@ -33,6 +33,7 @@ const sidebars: SidebarsConfig = {
                 'vendor-waters',
                 'vendor-agilent',
                 'vendor-sciex',
+                'vendor-shimadzu',
                 'parity',
             ],
         },

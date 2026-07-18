@@ -23,7 +23,7 @@ openmassspec-core = { version = "0.1", features = ["arrow"] }
 ## The `SpectrumSource` trait
 
 Every vendor parser (`opentfraw`, `opentimstdf`, `openwraw`, `openaraw`,
-`opensxraw`) implements this trait. Anything downstream of a parser -
+`opensxraw`, `openszraw`) implements this trait. Anything downstream of a parser -
 the canonical mzML writer, the Arrow batch builder, the conformance
 harness, the `openmassspec-io` umbrella, the `vendor2mzml` CLI -
 operates against `&mut dyn SpectrumSource`.
@@ -139,6 +139,7 @@ graph TD
     wraw[openwraw] --> core
     araw[openaraw] --> core
     sxraw[opensxraw] --> core
+    szraw[openszraw] --> core
 
     io["openmassspec-io<br/>(umbrella: detect_format, collect, to_mzml)"]
     io --> tfraw
@@ -146,6 +147,7 @@ graph TD
     io --> wraw
     io --> araw
     io --> sxraw
+    io --> szraw
 
     cli[vendor2mzml CLI] --> io
     py["openmassspec (Python metapackage)"] --> io

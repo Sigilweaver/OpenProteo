@@ -9,6 +9,7 @@ graph TD
     wraw["openwraw<br/>(Waters)"] --> core
     araw["openaraw<br/>(Agilent)"] --> core
     sxraw["opensxraw<br/>(SCIEX)"] --> core
+    szraw["openszraw<br/>(Shimadzu)"] --> core
 
     io["<b>openmassspec-io</b><br/>detect_format() · convert_to_mzml()<br/>collect() · VecSource"]
     io --> tfraw
@@ -16,6 +17,7 @@ graph TD
     io --> wraw
     io --> araw
     io --> sxraw
+    io --> szraw
 
     cli["openmassspec-io-cli<br/>(vendor2mzml)"] --> io
     py["openmassspec-io-py<br/>(PyO3 bindings)"] --> io
@@ -31,7 +33,7 @@ more than one vendor crate at a time.
 - **`openmassspec-core` knows nothing about vendors.** It owns the
   shared schema, the mzML byte format, the Arrow layout, and the
   conformance harness. Anything generic enough to be shared between
-  Thermo / Bruker / Waters / Agilent / SCIEX lives here.
+  Thermo / Bruker / Waters / Agilent / SCIEX / Shimadzu lives here.
 - **Vendor crates know nothing about each other.** Each implements
   `SpectrumSource` and a `write_mzml(path, writer)` helper. They
   depend on `openmassspec-core` and zero other vendor crates.

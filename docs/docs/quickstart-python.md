@@ -13,15 +13,16 @@ pip install openmassspec[thermo]    # + opentfraw
 pip install openmassspec[bruker]    # + opentimstdf
 pip install openmassspec[waters]    # + openwraw
 pip install openmassspec[agilent]   # + openaraw
+pip install openmassspec[sciex]     # + opensxraw
+pip install openmassspec[shimadzu]  # + openszraw
 pip install openmassspec[all]       # all standalone vendor packages
 ```
 
 `openmassspec-io` (pulled in by the base install) has every vendor -
-including SCIEX - compiled in, so reading and mzML conversion work for
-every supported format out of the box. Each extra above additionally
-installs the standalone per-vendor package for direct, vendor-specific
-access. SCIEX has no standalone Python package yet, so there is no
-`sciex` extra; `.wiff` reading is available from the base install.
+including SCIEX and Shimadzu - compiled in, so reading and mzML
+conversion work for every supported format out of the box. Each extra
+above additionally installs the standalone per-vendor package for
+direct, vendor-specific access.
 
 You can also install `openmassspec-io` directly if you only want the
 unified reader without the metapackage shim:
@@ -55,7 +56,7 @@ ships a structural format detector and a dispatcher:
 ```python
 import openmassspec as op
 
-kind = op.detect("sample.raw")     # 'thermo' / 'bruker' / 'waters' / 'agilent' / 'sciex' / None
+kind = op.detect("sample.raw")     # 'thermo' / 'bruker' / 'waters' / 'agilent' / 'sciex' / 'shimadzu' / None
 reader = op.open_run("sample.raw") # opentfraw.RawFile / opentimstdf.Reader / ...
 ```
 

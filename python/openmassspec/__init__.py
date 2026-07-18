@@ -3,17 +3,17 @@
 This metapackage is the single pip install surface for the stack. The
 base install always brings ``openmassspec_io`` (the Rust-backed reader
 that converts vendor inputs to mzML / Arrow). It has every vendor -
-including SCIEX - compiled in, so ``detect_format`` / ``to_mzml`` /
-``iter_spectra`` work for all supported formats out of the box. The
-per-vendor extras additionally install the standalone Python binding
-for direct use:
+including SCIEX and Shimadzu - compiled in, so ``detect_format`` /
+``to_mzml`` / ``iter_spectra`` work for all supported formats out of
+the box. The per-vendor extras additionally install the standalone
+Python binding for direct use:
 
 * ``opentfraw``   - Thermo `.raw` files
 * ``opentimstdf`` - Bruker timsTOF `.d/` bundles
 * ``openwraw``    - Waters MassLynx `.raw/` directories
 * ``openaraw``    - Agilent MassHunter `.d/` bundles
-* SCIEX `.wiff` reading is available from the base install; there is no
-  standalone SCIEX Python package yet, so no ``sciex`` extra.
+* ``opensxraw``   - SCIEX `.wiff`/`.wiff.scan` files
+* ``openszraw``   - Shimadzu LabSolutions `.qgd`/`.lcd` files
 
 Install the umbrella::
 
@@ -22,6 +22,8 @@ Install the umbrella::
     pip install openmassspec[bruker]    # + opentimstdf
     pip install openmassspec[waters]    # + openwraw
     pip install openmassspec[agilent]   # + openaraw
+    pip install openmassspec[sciex]     # + opensxraw
+    pip install openmassspec[shimadzu]  # + openszraw
     pip install openmassspec[all]       # + all standalone vendor bindings
 
 Top-level helpers fall into two layers:
@@ -72,12 +74,12 @@ __all__ = [
     "to_mzml",
 ]
 
-VENDORS = ("thermo", "bruker", "waters", "agilent", "sciex")
+VENDORS = ("thermo", "bruker", "waters", "agilent", "sciex", "shimadzu")
 
 
 def detect(path: str | os.PathLike[str]) -> Optional[str]:
     """Return ``"thermo"``, ``"bruker"``, ``"waters"``, ``"agilent"``,
-    ``"sciex"`` or ``None`` for *path*.
+    ``"sciex"``, ``"shimadzu"`` or ``None`` for *path*.
 
     The check is purely structural (extension + sentinel files); no vendor
     reader needs to be importable.
@@ -91,6 +93,12 @@ def detect(path: str | os.PathLike[str]) -> Optional[str]:
         # SCIEX: a .wiff file with its paired .wiff.scan alongside.
         if p.suffix.lower() == ".wiff" and Path(str(p) + ".scan").is_file():
             return "sciex"
+        # Shimadzu: self-contained, no sibling file to check - extension
+        # alone (matches this function's existing "purely structural"
+        # precedent; the Rust-side detect_format additionally verifies
+        # the CFBF/OLE2 magic bytes, see openmassspec-io's detect_format).
+        if p.suffix.lower() in (".qgd", ".lcd"):
+            return "shimadzu"
     if p.is_dir():
         suffix = p.suffix.lower()
         # Bruker and Agilent both use a .d directory; disambiguate by contents.
@@ -132,9 +140,11 @@ def open_run(path: str | os.PathLike[str]):
 
         return openaraw.RawReader(str(path))
     if kind == "sciex":
-        raise ImportError(
-            "SCIEX .wiff reading has no standalone Python package yet; use "
-            "openmassspec.to_mzml() / iter_spectra() / detect_format(), which "
-            "read .wiff through the built-in openmassspec_io reader."
-        )
+        import opensxraw  # type: ignore[import-not-found]
+
+        return opensxraw.RawReader(str(path))
+    if kind == "shimadzu":
+        import openszraw  # type: ignore[import-not-found]
+
+        return openszraw.RawReader(str(path))
     raise ValueError(f"unhandled vendor kind: {kind}")

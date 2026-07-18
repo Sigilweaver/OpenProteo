@@ -1,12 +1,12 @@
 //! `openmassspec-io` is the umbrella crate that ties together the open
 //! Rust mass-spec parsers (`opentfraw`, `opentimstdf`, `openwraw`,
-//! `openaraw`, `opensxraw`) behind a uniform vendor-detection +
-//! mzML-conversion API.
+//! `openaraw`, `opensxraw`, `openszraw`) behind a uniform
+//! vendor-detection + mzML-conversion API.
 //!
 //! Each vendor parser is gated behind a Cargo feature
-//! (`thermo`, `bruker`, `waters`, `agilent`, `sciex`) and re-exported
-//! under [`vendor`]. The `all` meta-feature pulls in every supported
-//! vendor.
+//! (`thermo`, `bruker`, `waters`, `agilent`, `sciex`, `shimadzu`) and
+//! re-exported under [`vendor`]. The `all` meta-feature pulls in every
+//! supported vendor.
 //!
 //! Even with no features enabled, [`detect_format`] is available so
 //! callers can probe a path without paying the compile-time cost of a
@@ -35,6 +35,8 @@ pub mod vendor {
     pub use openaraw;
     #[cfg(feature = "sciex")]
     pub use opensxraw;
+    #[cfg(feature = "shimadzu")]
+    pub use openszraw;
     #[cfg(feature = "thermo")]
     pub use opentfraw;
     #[cfg(feature = "bruker")]
@@ -59,6 +61,12 @@ pub enum VendorFormat {
     AgilentMassHunter,
     /// SCIEX legacy `.wiff` file (paired with a sibling `.wiff.scan`).
     SciexWiff,
+    /// Shimadzu LabSolutions `.qgd` (GC-MS) or `.lcd` (LC-MS, IT-TOF or
+    /// QTOF) file. `openszraw::reader::Reader` auto-detects which of
+    /// the three on-disk variants it is from the file's own CFBF
+    /// stream layout, so a single `VendorFormat` variant covers all of
+    /// them here too.
+    ShimadzuLabSolutions,
 }
 
 impl VendorFormat {
@@ -70,6 +78,7 @@ impl VendorFormat {
             Self::WatersRaw => "waters",
             Self::AgilentMassHunter => "agilent",
             Self::SciexWiff => "sciex",
+            Self::ShimadzuLabSolutions => "shimadzu",
         }
     }
 }
@@ -130,6 +139,12 @@ pub fn detect_format(path: &Path) -> Option<Detected> {
                 format: VendorFormat::SciexWiff,
             });
         }
+        if is_shimadzu_labsolutions(path) {
+            return Some(Detected {
+                path: path.to_path_buf(),
+                format: VendorFormat::ShimadzuLabSolutions,
+            });
+        }
         return None;
     }
     None
@@ -149,6 +164,34 @@ fn is_sciex_wiff(path: &Path) -> bool {
     let mut scan = path.as_os_str().to_os_string();
     scan.push(".scan");
     Path::new(&scan).is_file()
+}
+
+/// Returns `true` if `path` looks like a Shimadzu LabSolutions `.qgd` or
+/// `.lcd` file: one of those two extensions (case-insensitive) whose
+/// first 8 bytes are the CFBF/OLE2 container signature. Unlike the
+/// SCIEX `.wiff` check, there is no sibling file to corroborate against
+/// (Shimadzu raw files are self-contained), so the magic-byte check is
+/// the only content-level signal available - still strictly more
+/// verification than a bare extension check.
+fn is_shimadzu_labsolutions(path: &Path) -> bool {
+    let is_shimadzu_ext = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| e.eq_ignore_ascii_case("qgd") || e.eq_ignore_ascii_case("lcd"));
+    if !is_shimadzu_ext {
+        return false;
+    }
+    use std::fs::File;
+    use std::io::Read;
+    let Ok(mut f) = File::open(path) else {
+        return false;
+    };
+    let mut buf = [0u8; 8];
+    if f.read_exact(&mut buf).is_err() {
+        return false;
+    }
+    const CFBF_MAGIC: [u8; 8] = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
+    buf == CFBF_MAGIC
 }
 
 /// Returns `true` if the file looks like a Thermo Finnigan `.raw`.
@@ -282,6 +325,26 @@ fn write_to(
             {
                 let _ = (path, w, indexed);
                 Err(Error::FeatureDisabled { vendor: "sciex" })
+            }
+        }
+        VendorFormat::ShimadzuLabSolutions => {
+            #[cfg(feature = "shimadzu")]
+            {
+                // openszraw has no mzml module of its own; its Reader
+                // implements openmassspec_core::SpectrumSource, so drive
+                // the core writer directly (same pattern as Agilent/SCIEX).
+                let mut reader = openszraw::reader::Reader::open(path)?;
+                if indexed {
+                    openmassspec_core::write_indexed_mzml(&mut reader, w)?;
+                } else {
+                    openmassspec_core::write_mzml(&mut reader, w)?;
+                }
+                Ok(())
+            }
+            #[cfg(not(feature = "shimadzu"))]
+            {
+                let _ = (path, w, indexed);
+                Err(Error::FeatureDisabled { vendor: "shimadzu" })
             }
         }
     }
@@ -462,6 +525,24 @@ fn write_to_centroided(
                 Err(Error::FeatureDisabled { vendor: "sciex" })
             }
         }
+        VendorFormat::ShimadzuLabSolutions => {
+            #[cfg(feature = "shimadzu")]
+            {
+                let reader = openszraw::reader::Reader::open(path)?;
+                let mut src = with_min_intensity_opt(reader, min_intensity);
+                if indexed {
+                    openmassspec_core::write_indexed_mzml(&mut src, w)?;
+                } else {
+                    openmassspec_core::write_mzml(&mut src, w)?;
+                }
+                Ok(())
+            }
+            #[cfg(not(feature = "shimadzu"))]
+            {
+                let _ = (path, w, indexed, min_intensity);
+                Err(Error::FeatureDisabled { vendor: "shimadzu" })
+            }
+        }
     }
 }
 
@@ -565,6 +646,17 @@ pub fn collect(
             #[cfg(not(feature = "sciex"))]
             Err(Error::FeatureDisabled { vendor: "sciex" })
         }
+        VendorFormat::ShimadzuLabSolutions => {
+            #[cfg(feature = "shimadzu")]
+            {
+                let mut src = openszraw::reader::Reader::open(&detected.path)?;
+                let meta = src.run_metadata();
+                let recs: Vec<_> = src.iter_spectra().collect();
+                Ok((recs, meta))
+            }
+            #[cfg(not(feature = "shimadzu"))]
+            Err(Error::FeatureDisabled { vendor: "shimadzu" })
+        }
     }
 }
 
@@ -651,6 +743,18 @@ pub fn collect_centroided(
             }
             #[cfg(not(feature = "sciex"))]
             Err(Error::FeatureDisabled { vendor: "sciex" })
+        }
+        VendorFormat::ShimadzuLabSolutions => {
+            #[cfg(feature = "shimadzu")]
+            {
+                let src = openszraw::reader::Reader::open(&detected.path)?;
+                let mut src = with_min_intensity_opt(src, min_intensity);
+                let meta = src.run_metadata();
+                let recs: Vec<_> = src.iter_spectra().collect();
+                Ok((recs, meta))
+            }
+            #[cfg(not(feature = "shimadzu"))]
+            Err(Error::FeatureDisabled { vendor: "shimadzu" })
         }
     }
 }
@@ -748,6 +852,19 @@ pub fn stream(
             #[cfg(not(feature = "sciex"))]
             Err(Error::FeatureDisabled { vendor: "sciex" })
         }
+        VendorFormat::ShimadzuLabSolutions => {
+            #[cfg(feature = "shimadzu")]
+            {
+                let mut src = openszraw::reader::Reader::open(&detected.path)?;
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "shimadzu"))]
+            Err(Error::FeatureDisabled { vendor: "shimadzu" })
+        }
     }
 }
 
@@ -843,6 +960,20 @@ pub fn stream_centroided(
             #[cfg(not(feature = "sciex"))]
             Err(Error::FeatureDisabled { vendor: "sciex" })
         }
+        VendorFormat::ShimadzuLabSolutions => {
+            #[cfg(feature = "shimadzu")]
+            {
+                let src = openszraw::reader::Reader::open(&detected.path)?;
+                let mut src = with_min_intensity_opt(src, min_intensity);
+                let meta = src.run_metadata();
+                for rec in src.iter_spectra() {
+                    on_spectrum(rec)?;
+                }
+                Ok(meta)
+            }
+            #[cfg(not(feature = "shimadzu"))]
+            Err(Error::FeatureDisabled { vendor: "shimadzu" })
+        }
     }
 }
 
@@ -910,6 +1041,15 @@ pub fn metadata_only(detected: Detected) -> Result<openmassspec_core::RunMetadat
             }
             #[cfg(not(feature = "sciex"))]
             Err(Error::FeatureDisabled { vendor: "sciex" })
+        }
+        VendorFormat::ShimadzuLabSolutions => {
+            #[cfg(feature = "shimadzu")]
+            {
+                let src = openszraw::reader::Reader::open(&detected.path)?;
+                Ok(src.run_metadata())
+            }
+            #[cfg(not(feature = "shimadzu"))]
+            Err(Error::FeatureDisabled { vendor: "shimadzu" })
         }
     }
 }
@@ -1022,6 +1162,48 @@ mod tests {
         std::fs::write(&wiff, b"\xd0\xcf\x11\xe0").unwrap();
         // No .wiff.scan alongside -> not a usable SCIEX pair.
         assert!(detect_format(&wiff).is_none());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    const CFBF_MAGIC_8: [u8; 8] = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
+
+    #[test]
+    fn detect_returns_shimadzu_for_lcd_with_cfbf_magic() {
+        let dir = tempfile_dir();
+        let lcd = dir.join("run.lcd");
+        std::fs::write(&lcd, CFBF_MAGIC_8).unwrap();
+        let det = detect_format(&lcd).expect("detect");
+        assert_eq!(det.format, VendorFormat::ShimadzuLabSolutions);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detect_returns_shimadzu_for_qgd_with_cfbf_magic() {
+        let dir = tempfile_dir();
+        let qgd = dir.join("run.qgd");
+        std::fs::write(&qgd, CFBF_MAGIC_8).unwrap();
+        let det = detect_format(&qgd).expect("detect");
+        assert_eq!(det.format, VendorFormat::ShimadzuLabSolutions);
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detect_returns_none_for_lcd_without_cfbf_magic() {
+        let dir = tempfile_dir();
+        let lcd = dir.join("not_really.lcd");
+        std::fs::write(&lcd, b"not a real container").unwrap();
+        assert!(detect_format(&lcd).is_none());
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detect_returns_none_for_unrelated_extension_with_cfbf_magic() {
+        // The CFBF/OLE2 signature alone is not Shimadzu-specific (SCIEX's
+        // legacy .wiff also uses it) - the extension must match too.
+        let dir = tempfile_dir();
+        let other = dir.join("run.xyz");
+        std::fs::write(&other, CFBF_MAGIC_8).unwrap();
+        assert!(detect_format(&other).is_none());
         let _ = std::fs::remove_dir_all(&dir);
     }
 

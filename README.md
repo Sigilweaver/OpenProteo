@@ -9,11 +9,11 @@
 [![Rust MSRV](https://img.shields.io/badge/rust-1.88%2B-orange.svg)](https://www.rust-lang.org)
 [![Docs](https://img.shields.io/badge/docs-sigilweaver.app-blue.svg)](https://sigilweaver.app/openmassspec/docs/)
 
-> **One stack. Five vendors. Open Rust.**
+> **One stack. Six vendors. Open Rust.**
 >
 > OpenMassSpec is the open-source Rust stack for mass spectrometry
-> raw-file access. Read Thermo, Bruker, Waters, Agilent, and SCIEX
-> acquisitions through a single API, convert them to PSI-MS
+> raw-file access. Read Thermo, Bruker, Waters, Agilent, SCIEX, and
+> Shimadzu acquisitions through a single API, convert them to PSI-MS
 > [mzML 1.1.0](https://www.psidev.info/mzML) with the canonical writer,
 > and stream them straight into Arrow for downstream analytics. No
 > vendor SDKs, no Windows-only DLLs, no binary blobs in your release
@@ -32,6 +32,7 @@
 | Waters `.raw/` | [openwraw](https://github.com/Sigilweaver/OpenWRaw) | MassLynx bundle reader |
 | Agilent `.d/` | [openaraw](https://github.com/Sigilweaver/OpenARaw) | MassHunter reader |
 | SCIEX `.wiff` | [opensxraw](https://github.com/Sigilweaver/OpenSXRaw) | legacy `.wiff`/`.wiff.scan` reader |
+| Shimadzu `.qgd`/`.lcd` | [openszraw](https://github.com/Sigilweaver/OpenSZRaw) | LabSolutions GC-MS/LC-MS reader |
 
 Current pinned stack lives in [STACK.md](STACK.md).
 
@@ -56,7 +57,7 @@ openmassspec-io = { version = "1.0", features = ["all"] }
 ```
 
 Vendor features are independent (`thermo`, `bruker`, `waters`,
-`agilent`, `sciex`) so you only compile what you ship.
+`agilent`, `sciex`, `shimadzu`) so you only compile what you ship.
 
 ### Python
 
