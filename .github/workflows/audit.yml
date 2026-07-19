@@ -27,7 +27,7 @@ jobs:
     name: cargo audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: taiki-e/install-action@cargo-audit
       # quick-xml (RUSTSEC-2026-0194/0195) was a transitive dep via mzdata,
       # pinned to quick-xml "^0.30". mobiusklein/mzdata#53 bumped it to
