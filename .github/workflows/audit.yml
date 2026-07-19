@@ -29,9 +29,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: taiki-e/install-action@cargo-audit
-      # quick-xml (RUSTSEC-2026-0194/0195) is a transitive dep via mzdata,
-      # which pins quick-xml ^0.30 even on its main branch. Blocked upstream;
-      # tracked in Sigilweaver/OpenMassSpec#4 and filed against mzdata.
+      # quick-xml (RUSTSEC-2026-0194/0195) is a transitive dep via mzdata.
+      # mobiusklein/mzdata#53 bumped it to 0.41 on mzdata's main branch
+      # (merged 2026-07-14) but mzdata hasn't cut a release since - still
+      # nothing to bump here until it does. Tracked in
+      # Sigilweaver/OpenMassSpec#4.
       - run: >
           cargo audit
           --ignore RUSTSEC-2026-0194
