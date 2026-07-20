@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-07-20
+
 ### Security
 
 - Bumped `mzdata` from 0.63.5 to 0.65.4 in `openmassspec-io-cli`, pulling
