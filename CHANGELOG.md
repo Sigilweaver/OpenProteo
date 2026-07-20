@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.5.2] - 2026-07-20
+
+### Security
+
+- Bumped `opentfraw` 1.3.4 -> 1.3.5 and `openaraw` 0.1.2 -> 0.1.3,
+  picking up allocation-cap fixes for untrusted length-prefixed fields
+  in both vendor decoders (memory-exhaustion/DoS on crafted or corrupt
+  input). Bumped `opensxraw` 0.2.1 -> 0.2.2 for the same class of fix in
+  `read_scan_block`.
+
+### Fixed
+
+- Bumped `openwraw` 1.2.5 -> 1.2.6: precursor `target_mz`/
+  `collision_energy` and chromatogram export (pump pressure, flow rate,
+  temperature) are now populated instead of always empty/`None`.
+- Bumped `openszraw` 0.1.0 -> 0.1.1: `start_timestamp` is now populated
+  from CFBF directory-entry creation times for all three Shimadzu
+  on-disk variants.
+
 ## [1.5.1] - 2026-07-20
 
 ### Security
